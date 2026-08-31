@@ -410,6 +410,16 @@ h1, h2, h3 {
   margin-bottom: 2px;
 }
 
+.dropcard__icon {
+  width: 22px;
+  height: 22px;
+  margin-bottom: 2px;
+}
+
+.dropcard--twitch .dropcard__icon { color: var(--twitch); }
+.dropcard--youtube .dropcard__icon { color: var(--youtube); }
+.dropcard--tiktok .dropcard__icon { color: var(--tiktok); }
+
 .dropcard__eyebrow {
   font-size: 0.7rem;
   font-weight: 700;

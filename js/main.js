@@ -87,6 +87,7 @@ async function updateLatestYouTube() {
   const card = document.getElementById('drop-youtube');
   const titleEl = document.getElementById('drop-youtube-title');
   const thumbEl = document.getElementById('drop-youtube-thumb');
+  const iconEl = document.getElementById('drop-youtube-icon');
   if (!card || !titleEl) return;
 
   try {
@@ -97,8 +98,14 @@ async function updateLatestYouTube() {
     card.href = data.url;
     titleEl.textContent = data.title || 'watch latest video';
     if (thumbEl && data.thumbnail) {
+      thumbEl.onload = () => {
+        thumbEl.hidden = false;
+        if (iconEl) iconEl.hidden = true;
+      };
+      thumbEl.onerror = () => {
+        thumbEl.hidden = true;
+      };
       thumbEl.src = data.thumbnail;
-      thumbEl.hidden = false;
     }
   } catch (err) {
     titleEl.textContent = 'watch on youtube';
