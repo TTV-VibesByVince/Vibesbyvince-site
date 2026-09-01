@@ -1,7 +1,10 @@
 # vibesbyvince.com
 
-Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed as a
-static site on Cloudflare Pages — push to `main` and it redeploys.
+Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed on
+Cloudflare Workers (static assets) — push to `main` and it redeploys.
+`wrangler.jsonc` + `worker/index.js` handle the deploy config and the one
+dynamic route (`/api/youtube`); everything else is served directly as
+static files.
 
 ## Before first deploy — 1 thing left to fill in
 
@@ -12,21 +15,31 @@ static site on Cloudflare Pages — push to `main` and it redeploys.
 
 ## Updating your "next stream" time
 
-When you're offline, the status card shows a "next stream" line pulled from
-`data/schedule.json`. Update it whenever your schedule changes:
+When you're offline, the status card shows a "next stream" line pulled
+automatically from a public Google Calendar. Just add/edit events on that
+calendar — nothing to touch in the repo, nothing to redeploy.
 
-```json
-{
-  "next": "Monday · 5:00 PM MST",
-  "game": "Fortnite",
-  "updated": "2026-08-31"
-}
-```
+**One-time setup (already done, documented here for reference):**
 
-The "view schedule" link on that card always points to your real Twitch
-schedule page (`twitch.tv/vibesbyvince/schedule`), so keep that set up on
-Twitch itself for the full accurate calendar — this file is just the
-one-line preview.
+1. Made a public Google Calendar dedicated to the stream schedule (keep it
+   dedicated — "public" applies to the whole calendar).
+2. Grabbed its **secret address in iCal format** from Calendar → Settings
+   and sharing → Integrate calendar.
+3. Set that URL as a Cloudflare **secret** named `CALENDAR_ICS_URL` on this
+   Worker (Cloudflare dashboard → this project → Settings/Bindings →
+   Variables and Secrets → Add → type "Secret"). It's deliberately NOT
+   stored in this repo, since the repo is public and that URL lets anyone
+   holding it read your calendar's event details.
+4. `worker/index.js` reads `env.CALENDAR_ICS_URL`, fetches the feed, and
+   returns the earliest future event as JSON at `/api/schedule`.
+
+Because it's a secret (not a plain `vars` entry in `wrangler.jsonc`), it
+persists across every future git-triggered redeploy automatically — no
+need to re-enter it.
+
+The "view schedule" link on the status card always points to your real
+Twitch schedule page (`twitch.tv/vibesbyvince/schedule`) too, so keep that
+updated on Twitch for anyone who wants the full calendar view.
 
 ## Updating your "latest TikTok" card
 
@@ -48,15 +61,18 @@ Commit and push — that's it.
 - **Live status card** — client-side fetch to [DecAPI](https://decapi.me),
   a free keyless helper API built for stream overlays. Polls every 60s.
   Shows your current game when live, or the next-stream preview from
-  `data/schedule.json` when offline. Fails silently if unreachable. The
-  Twitch link card also picks up a small "live" badge when you're live.
+  `/api/schedule` (your Google Calendar, see above) when offline. Fails
+  silently if unreachable. The Twitch link card also picks up a small
+  "live" badge when you're live.
 - **Latest clip** — links straight to `decapi.me/twitch/clip/vibesbyvince`,
   which redirects to your most recent clip. No fetch, no API key.
-- **Latest YouTube upload** — `functions/api/youtube.js` is a Cloudflare
-  Pages Function that reads your channel's public RSS feed server-side
-  (avoids browser CORS issues) and returns the newest video. It can't
+- **Latest YouTube upload** — `worker/index.js` handles requests to
+  `/api/youtube` by reading your channel's public RSS feed server-side
+  (avoids browser CORS issues) and returning the newest video. It can't
   specifically tell Shorts apart from regular uploads — it just shows
-  whatever's newest.
+  whatever's newest. Every other URL on the site bypasses this script
+  entirely and is served straight from the static files (see
+  `run_worker_first` in `wrangler.jsonc`).
 - **Latest TikTok** — reads `data/latest-tiktok.json` (see above).
 
 ## Local preview
@@ -65,6 +81,6 @@ Commit and push — that's it.
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000`. Note the `/api/youtube` function only
-runs on Cloudflare (or via `wrangler pages dev`), so locally that card
+Then open `http://localhost:8000`. Note the `/api/youtube` route only
+runs on Cloudflare (or via `npx wrangler dev`), so locally that card
 will just show its fallback text.

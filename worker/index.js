@@ -17,6 +17,10 @@ export default {
       return handleYoutube();
     }
 
+    if (url.pathname === '/api/schedule') {
+      return handleSchedule(env);
+    }
+
     // Fallback safety net — shouldn't normally be reached given
     // run_worker_first is scoped to /api/*.
     return env.ASSETS.fetch(request);
@@ -56,6 +60,123 @@ async function handleYoutube() {
   } catch (err) {
     return json({ error: true, message: String(err) }, 200, 'public, max-age=60');
   }
+}
+
+// ---------- /api/schedule ----------
+//
+// Reads a public Google Calendar (iCal/ICS feed) server-side and returns
+// the next upcoming event as { next, game }. The feed URL is NOT stored
+// in this file or in git — it's read from env.CALENDAR_ICS_URL, a
+// Cloudflare secret set in the dashboard (Settings/Bindings for this
+// Worker). That keeps the calendar's address out of the public repo.
+//
+// Display is always formatted in America/Phoenix time, since that's
+// where the schedule is actually run from. Parsing assumes any event
+// time WITHOUT a "Z" (UTC) suffix is already in America/Phoenix local
+// time (which has no DST, so this is a safe fixed -7:00 offset) unless
+// Google's export marks it UTC directly.
+
+async function handleSchedule(env) {
+  try {
+    const icsUrl = env.CALENDAR_ICS_URL;
+    if (!icsUrl) throw new Error('CALENDAR_ICS_URL is not configured');
+
+    const res = await fetch(icsUrl, {
+      cf: { cacheTtl: 900, cacheEverything: true },
+    });
+    if (!res.ok) throw new Error(`ics fetch failed: ${res.status}`);
+
+    const icsText = await res.text();
+    const events = parseIcsEvents(icsText);
+
+    const now = Date.now();
+    const upcoming = events
+      .filter((e) => e.date && e.date.getTime() > now)
+      .sort((a, b) => a.date - b.date);
+
+    if (upcoming.length === 0) {
+      return json({ next: null, game: null }, 200, 'public, max-age=300, s-maxage=600');
+    }
+
+    const nextEvent = upcoming[0];
+    const formatted = new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'America/Phoenix',
+      timeZoneName: 'short',
+    }).format(nextEvent.date);
+
+    return json(
+      { next: formatted, game: nextEvent.summary || null },
+      200,
+      'public, max-age=300, s-maxage=600'
+    );
+  } catch (err) {
+    return json({ error: true, message: String(err) }, 200, 'public, max-age=60');
+  }
+}
+
+function parseIcsEvents(icsText) {
+  // Unfold ICS line continuations (a line starting with a space/tab is a
+  // continuation of the previous line) before splitting into lines.
+  const unfolded = icsText.replace(/\r?\n[ \t]/g, '');
+  const lines = unfolded.split(/\r?\n/);
+
+  const events = [];
+  let current = null;
+
+  for (const line of lines) {
+    if (line === 'BEGIN:VEVENT') {
+      current = {};
+      continue;
+    }
+    if (line === 'END:VEVENT') {
+      if (current) events.push(current);
+      current = null;
+      continue;
+    }
+    if (!current) continue;
+
+    const idx = line.indexOf(':');
+    if (idx === -1) continue;
+    const key = line.slice(0, idx);
+    const value = line.slice(idx + 1);
+
+    if (key === 'SUMMARY') current.summary = unescapeIcsText(value);
+    if (key === 'DTSTART' || key.startsWith('DTSTART;')) {
+      current.date = parseIcsDate(value);
+    }
+  }
+
+  return events;
+}
+
+function parseIcsDate(raw) {
+  // Matches e.g. 20260908T170000Z or 20260908T170000
+  const m = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/);
+  if (!m) return null;
+
+  const [, y, mo, d, h, mi, s, z] = m;
+  const y_ = +y, mo_ = +mo - 1, d_ = +d, h_ = +h, mi_ = +mi, s_ = +s;
+
+  if (z === 'Z') {
+    return new Date(Date.UTC(y_, mo_, d_, h_, mi_, s_));
+  }
+
+  // No explicit UTC marker — treat as America/Phoenix local time (fixed
+  // UTC-7, no DST).
+  return new Date(Date.UTC(y_, mo_, d_, h_, mi_, s_) + 7 * 60 * 60 * 1000);
+}
+
+function unescapeIcsText(str) {
+  return str
+    .replace(/\\n/gi, ' ')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .replace(/\\\\/g, '\\');
 }
 
 function firstMatch(str, regex) {
