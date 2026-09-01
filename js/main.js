@@ -9,9 +9,9 @@ const TWITCH_CHANNEL = 'vibesbyvince';
 /* ---------- Twitch live status + "currently playing" / "next stream" ---------- */
 // Uses DecAPI (https://decapi.me) — a free, keyless helper API built for
 // exactly this kind of stream-overlay use case. No auth, no secrets.
-// When offline, "next stream" comes from data/schedule.json, which you
-// update by hand (see README) — the full accurate schedule always lives
-// on Twitch itself, linked via the CTA.
+// When offline, "next stream" comes from /api/schedule, which reads your
+// public Google Calendar server-side (see worker/index.js) — the full
+// accurate schedule always lives on Twitch itself too, linked via the CTA.
 
 async function fetchText(url) {
   const res = await fetch(url, { cache: 'no-store' });
@@ -61,7 +61,7 @@ async function updateLiveStatus() {
       if (liveBadge) liveBadge.hidden = true;
 
       try {
-        const res = await fetch('data/schedule.json', { cache: 'no-store' });
+        const res = await fetch('/api/schedule', { cache: 'no-store' });
         const sched = await res.json();
         detailEl.textContent = sched.next
           ? `next stream · ${sched.next}${sched.game ? ' · ' + sched.game : ''}`
