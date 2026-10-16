@@ -21,6 +21,10 @@ export default {
       return handleSchedule(env);
     }
 
+    if (url.pathname === '/api/tiktok') {
+      return handleTiktok(request, env);
+    }
+
     // Fallback safety net — shouldn't normally be reached given
     // run_worker_first is scoped to /api/*.
     return env.ASSETS.fetch(request);
@@ -57,6 +61,54 @@ async function handleYoutube() {
     };
 
     return json(data, 200, 'public, max-age=600, s-maxage=1800');
+  } catch (err) {
+    return json({ error: true, message: String(err) }, 200, 'public, max-age=60');
+  }
+}
+
+// ---------- /api/tiktok ----------
+//
+// TikTok has no free keyless "latest video" feed, so the video is picked
+// by hand: paste its link into data/latest-tiktok.json. This route reads
+// that file from the static assets, then asks TikTok's public oEmbed
+// endpoint (no key needed) for the caption and cover image. The cover
+// URL TikTok returns is signed and expires, which is why it's looked up
+// here (cached ~1h) instead of being stored in the JSON file.
+
+async function handleTiktok(request, env) {
+  try {
+    const fileRes = await env.ASSETS.fetch(new URL('/data/latest-tiktok.json', request.url));
+    if (!fileRes.ok) throw new Error(`latest-tiktok.json: ${fileRes.status}`);
+    const file = await fileRes.json();
+
+    const videoUrl = typeof file.url === 'string' ? file.url.trim() : '';
+    if (!/^https:\/\/(www\.)?tiktok\.com\/@[\w.]+\/video\/\d+/.test(videoUrl)) {
+      throw new Error('no TikTok video link set in data/latest-tiktok.json');
+    }
+
+    let title = file.caption || '';
+    let thumbnail = null;
+    try {
+      const oembedRes = await fetch(
+        `https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`,
+        { cf: { cacheTtl: 3600, cacheEverything: true } }
+      );
+      if (oembedRes.ok) {
+        const o = await oembedRes.json();
+        if (!title && o.title) title = o.title;
+        if (typeof o.thumbnail_url === 'string' && o.thumbnail_url.startsWith('https://')) {
+          thumbnail = o.thumbnail_url;
+        }
+      }
+    } catch {
+      // oEmbed down — still return the link and caption from the file.
+    }
+
+    return json(
+      { url: videoUrl, title: title || 'watch latest tiktok', thumbnail },
+      200,
+      'public, max-age=600, s-maxage=3600'
+    );
   } catch (err) {
     return json({ error: true, message: String(err) }, 200, 'public, max-age=60');
   }
