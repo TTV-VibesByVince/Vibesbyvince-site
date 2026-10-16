@@ -2,16 +2,9 @@
 
 Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed on
 Cloudflare Workers (static assets) — push to `main` and it redeploys.
-`wrangler.jsonc` + `worker/index.js` handle the deploy config and the one
-dynamic route (`/api/youtube`); everything else is served directly as
-static files.
-
-## Before first deploy — 1 thing left to fill in
-
-- **Discord invite** — in `index.html`, find `id="discord-link"` and
-  replace the `href="#"` with your real invite URL. Everything else
-  (GitHub link, YouTube channel ID, Instagram, Bluesky, Govee affiliate
-  link) is already filled in.
+`wrangler.jsonc` + `worker/index.js` handle the deploy config and the
+dynamic routes (`/api/youtube`, `/api/schedule`, `/api/tiktok`);
+everything else is served directly as static files.
 
 ## Updating your "next stream" time
 
@@ -43,18 +36,23 @@ updated on Twitch for anyone who wants the full calendar view.
 
 ## Updating your "latest TikTok" card
 
-There's no free public API for this, so it's a one-line manual update.
-Whenever you want to feature a new TikTok post, edit `data/latest-tiktok.json`:
+There's no free keyless "latest video" feed for TikTok, so you pick the
+video. Open it on TikTok, copy its link, and paste it into
+`data/latest-tiktok.json`:
 
 ```json
 {
   "url": "https://www.tiktok.com/@vibesbyvince/video/1234567890123456789",
-  "caption": "short caption to show on the card",
-  "updated": "2026-08-30"
+  "caption": ""
 }
 ```
 
-Commit and push — that's it.
+Commit and push. The full `tiktok.com/@vibesbyvince/video/...` link is
+needed (short `vm.tiktok.com` share links won't work). Leave `caption`
+empty to use the TikTok's own caption, or fill it in to override it.
+`/api/tiktok` looks up the caption and cover image through TikTok's
+public oEmbed endpoint. With `url` empty, the card just links to the
+profile.
 
 ## How the dynamic bits work
 
@@ -64,8 +62,8 @@ Commit and push — that's it.
   `/api/schedule` (your Google Calendar, see above) when offline. Fails
   silently if unreachable. The Twitch link card also picks up a small
   "live" badge when you're live.
-- **Latest clip** — links straight to `decapi.me/twitch/clip/vibesbyvince`,
-  which redirects to your most recent clip. No fetch, no API key.
+- **Latest clips** — links to `twitch.tv/vibesbyvince/clips`. (It used to
+  point at DecAPI's clip endpoint, which now returns a 404.)
 - **Latest YouTube upload** — `worker/index.js` handles requests to
   `/api/youtube` by reading your channel's public RSS feed server-side
   (avoids browser CORS issues) and returning the newest video. It can't
@@ -73,15 +71,23 @@ Commit and push — that's it.
   whatever's newest. Every other URL on the site bypasses this script
   entirely and is served straight from the static files (see
   `run_worker_first` in `wrangler.jsonc`).
-- **Latest TikTok** — reads `data/latest-tiktok.json` (see above).
+- **Latest TikTok** — `/api/tiktok` reads `data/latest-tiktok.json` and
+  adds the caption and cover image from TikTok's oEmbed (see above).
+- **Fonts** — Inter and Rajdhani are self-hosted in `assets/fonts`
+  (SIL Open Font License, licence files alongside), so the page never
+  contacts Google Fonts.
+- **Privacy** — `privacy.html` describes exactly what the page loads.
+  Update it if you ever add analytics, embeds, forms or cookies.
+- **404 page** — unknown URLs get `404.html` (`not_found_handling` in
+  `wrangler.jsonc`).
 
-## Local preview. 
+## Local preview
 
 
 ```
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000`. Note the `/api/youtube` route only
-runs on Cloudflare (or via `npx wrangler dev`), so locally that card
-will just show its fallback text.
+Then open `http://localhost:8000`. Note the `/api/*` routes only
+run on Cloudflare (or via `npx wrangler dev`), so locally those cards
+will just show their fallback text.

@@ -79,9 +79,9 @@ updateLiveStatus();
 setInterval(updateLiveStatus, 60000);
 
 /* ---------- Latest YouTube upload ---------- */
-// Backed by /functions/api/youtube.js, a Cloudflare Pages Function that
-// reads the channel's public RSS feed server-side (avoids browser CORS
-// issues with youtube.com) and returns the newest video as JSON.
+// Backed by /api/youtube in worker/index.js, which reads the channel's
+// public RSS feed server-side (avoids browser CORS issues with
+// youtube.com) and returns the newest video as JSON.
 
 async function updateLatestYouTube() {
   const card = document.getElementById('drop-youtube');
@@ -115,21 +115,35 @@ async function updateLatestYouTube() {
 updateLatestYouTube();
 
 /* ---------- Latest TikTok post ---------- */
-// Manually updated: edit data/latest-tiktok.json and push whenever you
-// want to feature a new post. No scraping, nothing to break.
+// You paste the video link into data/latest-tiktok.json and push.
+// /api/tiktok (worker/index.js) reads that file and asks TikTok's public
+// oEmbed endpoint for the caption and cover image, so the card shows a
+// thumbnail just like the YouTube one. No scraping, no API key.
 
 async function updateLatestTikTok() {
   const card = document.getElementById('drop-tiktok');
   const titleEl = document.getElementById('drop-tiktok-title');
+  const thumbEl = document.getElementById('drop-tiktok-thumb');
+  const iconEl = document.getElementById('drop-tiktok-icon');
   if (!card || !titleEl) return;
 
   try {
-    const res = await fetch('data/latest-tiktok.json', { cache: 'no-store' });
+    const res = await fetch('/api/tiktok', { cache: 'no-store' });
     const data = await res.json();
-    if (!data.url) throw new Error('no post configured');
+    if (data.error || !data.url) throw new Error('no post configured');
 
     card.href = data.url;
-    titleEl.textContent = data.caption || 'watch latest tiktok';
+    titleEl.textContent = data.title || 'watch latest tiktok';
+    if (thumbEl && data.thumbnail) {
+      thumbEl.onload = () => {
+        thumbEl.hidden = false;
+        if (iconEl) iconEl.hidden = true;
+      };
+      thumbEl.onerror = () => {
+        thumbEl.hidden = true;
+      };
+      thumbEl.src = data.thumbnail;
+    }
   } catch (err) {
     titleEl.textContent = 'watch on tiktok';
   }

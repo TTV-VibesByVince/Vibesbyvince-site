@@ -1,5 +1,32 @@
 /* ===== VibesByVince — stream hub ===== */
 
+/* Self-hosted fonts (latin subset, SIL Open Font License — see assets/fonts).
+   Served from our own domain so visitors' browsers never contact Google. */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/rajdhani-600-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../assets/fonts/rajdhani-700-latin.woff2') format('woff2');
+}
+
 :root {
   --bg: #08050d;
   --bg-panel: #120b1c;
@@ -9,9 +36,12 @@
 
   --purple: #9b5cff;
   --pink: #ff4fd8;
-  --cyan: #4ce8ff;
 
-  --gradient: linear-gradient(120deg, var(--purple), var(--pink) 55%, var(--cyan));
+  /* brand gradient: dark neon purple -> hot pink -> deep electric blue */
+  --grad-purple: #8a2bff;
+  --grad-pink: #ff3fc8;
+  --grad-blue: #2f5bff;
+  --gradient: linear-gradient(120deg, var(--grad-purple), var(--grad-pink) 52%, var(--grad-blue));
 
   --twitch: #a970ff;
   --tiktok: #37f2e0;
@@ -58,7 +88,7 @@ h1, h2, h3 {
   pointer-events: none;
   background:
     radial-gradient(ellipse 60% 40% at 50% -5%, rgba(155, 92, 255, 0.35), transparent 60%),
-    radial-gradient(ellipse 50% 35% at 85% 15%, rgba(76, 232, 255, 0.14), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 85% 15%, rgba(47, 91, 255, 0.16), transparent 60%),
     radial-gradient(ellipse 55% 40% at 10% 70%, rgba(255, 79, 216, 0.12), transparent 60%);
 }
 
@@ -202,13 +232,42 @@ h1, h2, h3 {
   100% { box-shadow: 0 0 0 0 rgba(255, 47, 208, 0); }
 }
 
+/* section titles (Socials, Latest Content) */
+
+.section {
+  margin-bottom: 48px;
+}
+
+.section__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.section__title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.section__rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(180, 140, 255, 0.35), rgba(180, 140, 255, 0));
+}
+
 /* link cards */
 
 .links {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  margin-bottom: 40px;
 }
 
 .linkcard {
@@ -376,7 +435,6 @@ h1, h2, h3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 40px;
 }
 
 .dropcard {
@@ -402,23 +460,48 @@ h1, h2, h3 {
 .dropcard--youtube:hover { border-color: var(--youtube); }
 .dropcard--tiktok:hover { border-color: var(--tiktok); }
 
-.dropcard__thumb {
+/* every card gets the same 16:9 media box so the row lines up: a real
+   thumbnail when we have one, otherwise the platform icon on a tinted tile */
+.dropcard__media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   aspect-ratio: 16 / 9;
-  object-fit: cover;
   border-radius: 8px;
-  margin-bottom: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  background: linear-gradient(135deg, rgba(155, 92, 255, 0.22), rgba(18, 11, 28, 0.9));
 }
 
-.dropcard__icon {
-  width: 22px;
-  height: 22px;
-  margin-bottom: 2px;
+.dropcard--youtube .dropcard__media {
+  background: linear-gradient(135deg, rgba(255, 75, 75, 0.2), rgba(18, 11, 28, 0.9));
 }
 
-.dropcard--twitch .dropcard__icon { color: var(--twitch); }
-.dropcard--youtube .dropcard__icon { color: var(--youtube); }
-.dropcard--tiktok .dropcard__icon { color: var(--tiktok); }
+.dropcard--tiktok .dropcard__media {
+  background: linear-gradient(135deg, rgba(55, 242, 224, 0.16), rgba(18, 11, 28, 0.9));
+}
+
+.dropcard__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dropcard__media-icon {
+  width: 34px;
+  height: 34px;
+}
+
+.dropcard__thumb[hidden],
+.dropcard__media-icon[hidden] {
+  display: none;
+}
+
+.dropcard--twitch .dropcard__media-icon { color: var(--twitch); }
+.dropcard--youtube .dropcard__media-icon { color: var(--youtube); }
+.dropcard--tiktok .dropcard__media-icon { color: var(--tiktok); }
 
 .dropcard__eyebrow {
   font-size: 0.7rem;
@@ -516,51 +599,46 @@ h1, h2, h3 {
   font-size: 0.98rem;
 }
 
-.panel.community .panel__text {
-  margin-bottom: 20px;
-}
-
-.cta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 13px 26px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: var(--gradient);
-  color: #0a0510;
-  text-decoration: none;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.02em;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cta-btn:hover,
-.cta-btn:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(155, 92, 255, 0.35);
-}
-
 /* projects */
 
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 18px;
 }
 
 .project-card {
+  display: flex;
+  flex-direction: column;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.2);
   padding: 22px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.project-card:hover,
+.project-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--purple);
+  background: rgba(155, 92, 255, 0.06);
 }
 
 .project-card__icon {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 12px;
+  color: var(--purple);
+}
+
+.project-card__link {
+  margin-top: auto;
+  padding-top: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--purple);
 }
 
 .project-card__title {
@@ -607,17 +685,196 @@ h1, h2, h3 {
   margin-bottom: 14px;
 }
 
+.site-footer__link {
+  color: inherit;
+}
+
+.site-footer__link:hover,
+.site-footer__link:focus-visible {
+  color: var(--text);
+}
+
+/* floating "join the discord" button — follows the visitor down the page */
+
+.discord-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 22px 0 18px;
+  border-radius: 999px;
+  background: var(--gradient);
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(10, 5, 16, 0.45);
+  box-shadow: 0 10px 30px rgba(138, 43, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.discord-fab:hover,
+.discord-fab:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px rgba(138, 43, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.discord-fab__icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+/* privacy + 404 pages */
+
+.page--narrow {
+  max-width: 720px;
+}
+
+.back-link {
+  margin-bottom: 24px;
+}
+
+.prose h2 {
+  margin: 28px 0 8px;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+.prose p,
+.prose li {
+  color: var(--text-dim);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.prose p {
+  margin: 0 0 12px;
+}
+
+.prose ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+
+.prose a {
+  color: #c9a6ff;
+}
+
+.prose strong {
+  color: var(--text);
+}
+
+.prose__updated {
+  font-size: 0.8rem !important;
+  margin-top: -8px !important;
+}
+
+.not-found {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.not-found__code {
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 5rem;
+  line-height: 1;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.not-found__title {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+/* leave room under the footer so the floating button never covers it */
+.page {
+  padding-bottom: 104px;
+}
+
+/* respect visitors who've asked their device for less motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* responsive */
 
 @media (max-width: 620px) {
   .page {
-    padding: 40px 18px 32px;
+    padding: 40px 18px 104px;
   }
 
-  .links,
+  /* socials: two compact columns instead of six full-width rows */
+  .links {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .linkcard {
+    column-gap: 10px;
+    padding: 14px;
+  }
+
+  .linkcard__icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .linkcard__sub {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .drops,
   .project-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* floating button shrinks to a round Discord icon on phones */
+  .discord-fab {
+    right: 16px;
+    bottom: 16px;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .discord-fab__icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .discord-fab__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .panel {
@@ -641,17 +898,5 @@ h1, h2, h3 {
   .status-card {
     min-width: 0;
     width: 100%;
-  }
-
-  .cta-btn {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
-}
-
-@media (min-width: 621px) and (max-width: 860px) {
-  .project-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
