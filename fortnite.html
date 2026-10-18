@@ -59,8 +59,18 @@
     <button class="btn" type="button" id="copy-code" data-code="VibesByVince">Copy code</button>
   </section>
 
+  <!-- Tabs: one section at a time (js/fortnite.js). Links like /fortnite#shop open a tab directly. -->
+  <nav class="hub-tabs" aria-label="Fortnite Hub sections">
+    <div class="hub-tabs__inner" role="tablist">
+      <button type="button" class="hub-tab is-on" role="tab" id="tabbtn-lookup" aria-controls="tab-lookup" aria-selected="true" data-tab="lookup">Lookup</button>
+      <button type="button" class="hub-tab" role="tab" id="tabbtn-shop" aria-controls="tab-shop" aria-selected="false" tabindex="-1" data-tab="shop">Item Shop</button>
+      <button type="button" class="hub-tab" role="tab" id="tabbtn-drops" aria-controls="tab-drops" aria-selected="false" tabindex="-1" data-tab="drops">Drops</button>
+      <button type="button" class="hub-tab" role="tab" id="tabbtn-challenge" aria-controls="tab-challenge" aria-selected="false" tabindex="-1" data-tab="challenge">Challenge</button>
+    </div>
+  </nav>
+
   <!-- Stats lookup -->
-  <section class="panel" aria-labelledby="stats-h">
+  <section class="panel tabpanel" id="tab-lookup" role="tabpanel" aria-labelledby="tabbtn-lookup">
     <div class="sec-head"><h2 id="stats-h" class="title">Stats Lookup</h2><span class="rule" aria-hidden="true"></span></div>
     <p class="sec-sub">Enter an Epic username. Stats have to be public in Fortnite: Settings &rsaquo; Account and Privacy &rsaquo; turn on "Show on Career Leaderboard".</p>
 
@@ -100,7 +110,7 @@
   </section>
 
   <!-- Item shop -->
-  <section class="panel" aria-labelledby="shop-h">
+  <section class="panel tabpanel" id="tab-shop" role="tabpanel" aria-labelledby="tabbtn-shop" hidden>
     <div class="sec-head"><h2 id="shop-h" class="title">Today's Item Shop</h2><span class="rule" aria-hidden="true"></span>
       <span class="timer">resets in <b id="shop-timer">--:--:--</b></span>
     </div>
@@ -121,28 +131,28 @@
     <div id="shop-sections"></div>
   </section>
 
-  <!-- Randomizers -->
-  <div class="tools">
-    <section class="panel" aria-labelledby="drop-h">
+  <!-- Drop spot randomizer -->
+    <section class="panel tabpanel" id="tab-drops" role="tabpanel" aria-labelledby="tabbtn-drops" hidden>
       <div class="sec-head"><h2 id="drop-h" class="title">Where We Dropping?</h2><span class="rule" aria-hidden="true"></span></div>
-      <p class="sec-sub">Spin for a random landing spot on the current map.</p>
+      <p class="sec-sub">Hit Drop for a random landing spot on the current map.</p>
       <div class="map" id="drop-map">
         <img class="map__img" id="drop-map-img" alt="Current Fortnite map" width="2048" height="2048" hidden>
         <span class="map__marker" id="drop-marker" hidden></span>
       </div>
       <div class="tool-foot">
-        <div><span class="label">You're landing at</span><span class="tool-result" id="drop-name">Hit spin!</span></div>
-        <button class="btn" type="button" id="drop-spin">Spin</button>
+        <div><span class="label">You're landing at</span><span class="tool-result" id="drop-name">Hit Drop!</span></div>
+        <button class="btn" type="button" id="drop-spin">Drop</button>
       </div>
       <label class="check"><input type="checkbox" id="drop-major"> named locations only</label>
     </section>
 
-    <section class="panel panel--flex" aria-labelledby="chal-h">
+  <!-- Challenge roulette -->
+    <section class="panel panel--flex tabpanel" id="tab-challenge" role="tabpanel" aria-labelledby="tabbtn-challenge" hidden>
       <div class="sec-head"><h2 id="chal-h" class="title">Challenge Roulette</h2><span class="rule" aria-hidden="true"></span></div>
       <p class="sec-sub">Make your next match harder (and funnier).</p>
       <div class="challenge" aria-live="polite">
         <span class="chip chip--sky" id="chal-tag">Ready?</span>
-        <span class="challenge__text" id="chal-text">Spin for a challenge</span>
+        <span class="challenge__text" id="chal-text">Hit the button for a challenge</span>
       </div>
       <div class="tool-foot">
         <div class="tabs" id="chal-filters" role="group" aria-label="Challenge type">
@@ -153,7 +163,6 @@
         <button class="btn" type="button" id="chal-spin">New challenge</button>
       </div>
     </section>
-  </div>
 
   <footer class="fn-footer">
     Fortnite is a trademark of Epic Games, Inc. This is a fan site and is not affiliated with or endorsed by Epic Games.<br>

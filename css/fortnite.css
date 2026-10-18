@@ -344,6 +344,77 @@ h1, h2, h3 { font-family: 'Rajdhani', 'Inter', sans-serif; letter-spacing: 0.03e
 
 .field:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
 
+/* ---------- hub tabs (Lookup / Item Shop / Drops / Challenge) ---------- */
+/* Sticks to the top while scrolling, so switching away from the long shop
+   never needs a scroll back up. */
+
+.hub-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  margin: 0 -24px 24px;
+  padding: 10px 24px;
+  pointer-events: none; /* only the pill itself is clickable */
+}
+
+.hub-tabs__inner {
+  display: inline-flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(6, 10, 20, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hub-tab {
+  position: relative;
+  min-height: 46px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dim);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.hub-tab:hover { color: #fff; background: rgba(30, 123, 255, 0.15); }
+
+.hub-tab.is-on {
+  background: linear-gradient(180deg, #2b8cff, var(--deep));
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(30, 123, 255, 0.35);
+}
+
+.hub-tab.is-on::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 22px;
+  height: 3px;
+  margin-left: -11px;
+  border-radius: 2px;
+  background: var(--yellow);
+  transform: skewX(-20deg);
+}
+
+.hub-tab:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
 /* ---------- creator code ---------- */
 
 .code-card {
@@ -353,7 +424,7 @@ h1, h2, h3 { font-family: 'Rajdhani', 'Inter', sans-serif; letter-spacing: 0.03e
   gap: 16px;
   flex-wrap: wrap;
   padding: 20px 24px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
   border-radius: var(--radius);
   border: 1px solid rgba(255, 176, 87, 0.45);
   background: linear-gradient(120deg, rgba(255, 140, 40, 0.22), rgba(12, 16, 30, 0.96) 42%, rgba(12, 16, 30, 0.96) 60%, rgba(165, 70, 255, 0.24));
@@ -574,18 +645,13 @@ h1, h2, h3 { font-family: 'Rajdhani', 'Inter', sans-serif; letter-spacing: 0.03e
 
 /* ---------- randomizers ---------- */
 
-.tools {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-}
-
-.tools .panel { margin-bottom: 0; }
-
+/* the map gets the full panel width now that Drops has its own tab */
 .map {
   position: relative;
+  width: 100%;
+  max-width: 760px;
   aspect-ratio: 1 / 1;
-  margin-bottom: 14px;
+  margin: 0 auto 16px;
   overflow: hidden;
   border-radius: 14px;
   border: 1px solid rgba(90, 170, 255, 0.3);
@@ -596,15 +662,24 @@ h1, h2, h3 { font-family: 'Rajdhani', 'Inter', sans-serif; letter-spacing: 0.03e
 
 .map__marker {
   position: absolute;
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
   border-radius: 50%;
   background: var(--yellow);
   border: 3px solid var(--deep);
   box-shadow: 0 0 0 6px rgba(255, 214, 10, 0.35), 0 0 24px var(--yellow);
   transition: left 0.35s ease, top 0.35s ease;
 }
+
+#tab-drops .tool-foot,
+#tab-drops .check {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#tab-drops .check { display: flex; }
 
 .tool-foot {
   display: flex;
@@ -705,8 +780,10 @@ h1, h2, h3 { font-family: 'Rajdhani', 'Inter', sans-serif; letter-spacing: 0.03e
   .panel { padding: 20px; }
   .lookup { flex-direction: column; align-items: stretch; }
   .statgrid, .shop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tools { grid-template-columns: minmax(0, 1fr); }
-  .tools .panel { margin-bottom: 0; }
+  .hub-tabs { margin: 0 -16px 18px; padding: 8px 16px; }
+  /* all four tabs share the width so none get cut off */
+  .hub-tabs__inner { display: flex; width: 100%; gap: 2px; padding: 4px; }
+  .hub-tab { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 0 4px; font-size: 15px; letter-spacing: 0.01em; }
   .code-card__line { font-size: 22px; }
 
   .fab {

@@ -30,6 +30,62 @@ function tabGroup(container, attr, onChange) {
   }
 }
 
+/* ---------- hub tabs ---------- */
+// One section at a time. The URL hash remembers the tab (/fortnite#shop),
+// so a link can open a specific tab and the back button works.
+
+const HUB_TABS = ['lookup', 'shop', 'drops', 'challenge'];
+
+function showTab(name, { focus = false, scroll = false } = {}) {
+  if (!HUB_TABS.includes(name)) name = 'lookup';
+  for (const tab of HUB_TABS) {
+    const on = tab === name;
+    const btn = $(`tabbtn-${tab}`);
+    btn.classList.toggle('is-on', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    btn.tabIndex = on ? 0 : -1;
+    $(`tab-${tab}`).hidden = !on;
+  }
+  if (focus) $(`tabbtn-${name}`).focus();
+  // if the tab bar has scrolled away (e.g. deep in the shop), bring the
+  // new section's top into view under it
+  if (scroll) {
+    const bar = document.querySelector('.hub-tabs');
+    const panelTop = $(`tab-${name}`).getBoundingClientRect().top;
+    if (panelTop < bar.offsetHeight) {
+      window.scrollBy({ top: panelTop - bar.offsetHeight - 12, behavior: 'smooth' });
+    }
+  }
+}
+
+const tabList = document.querySelector('.hub-tabs__inner');
+
+tabList.addEventListener('click', (e) => {
+  const btn = e.target.closest('.hub-tab');
+  if (!btn) return;
+  const name = btn.dataset.tab;
+  history.replaceState(null, '', name === 'lookup' ? location.pathname : `#${name}`);
+  showTab(name, { scroll: true });
+});
+
+// arrow keys move between tabs (standard tab-list keyboard behaviour)
+tabList.addEventListener('keydown', (e) => {
+  const current = HUB_TABS.indexOf(document.activeElement && document.activeElement.dataset.tab);
+  if (current === -1) return;
+  let next = null;
+  if (e.key === 'ArrowRight') next = (current + 1) % HUB_TABS.length;
+  if (e.key === 'ArrowLeft') next = (current - 1 + HUB_TABS.length) % HUB_TABS.length;
+  if (e.key === 'Home') next = 0;
+  if (e.key === 'End') next = HUB_TABS.length - 1;
+  if (next === null) return;
+  e.preventDefault();
+  history.replaceState(null, '', next === 0 ? location.pathname : `#${HUB_TABS[next]}`);
+  showTab(HUB_TABS[next], { focus: true });
+});
+
+window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+showTab(location.hash.slice(1));
+
 /* ---------- live / next-stream banner ---------- */
 
 async function updateLiveBanner() {
