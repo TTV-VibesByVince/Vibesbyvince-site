@@ -5,3 +5,5 @@ worker
 README.md
 .gitignore
 .assetsignore
+.dev.vars
+node_modules
