@@ -50,6 +50,7 @@
   --instagram: #e1306c;
   --bluesky: #1185fe;
   --govee: #ffb020;
+  --razer: #44d62c;
 
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -427,6 +428,34 @@ h1, h2, h3 {
   font-size: 1.1rem;
   color: var(--govee);
   flex-shrink: 0;
+}
+
+/* stack of affiliate cards */
+.shops {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.shops .shopcard {
+  margin-bottom: 0;
+}
+
+/* Razer variant: same card, Razer green instead of Govee amber */
+.shopcard--razer {
+  border-color: rgba(68, 214, 44, 0.25);
+  background: rgba(68, 214, 44, 0.05);
+}
+
+.shopcard--razer:hover,
+.shopcard--razer:focus-visible {
+  border-color: var(--razer);
+  background: rgba(68, 214, 44, 0.09);
+}
+
+.shopcard--razer .shopcard__eyebrow,
+.shopcard--razer .shopcard__arrow {
+  color: var(--razer);
 }
 
 /* drop cards (latest clip / upload / post) */
