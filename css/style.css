@@ -633,6 +633,12 @@ h1, h2, h3 {
   margin-bottom: 24px;
 }
 
+/* About Me now comes first, right under the hero; give it the same gap
+   as the sections that follow */
+.panel.about {
+  margin-bottom: 48px;
+}
+
 .panel__heading {
   margin: 0 0 16px;
   font-size: 1.4rem;
