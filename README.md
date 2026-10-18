@@ -3,37 +3,59 @@
 Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed on
 Cloudflare Workers (static assets) — push to `main` and it redeploys.
 `wrangler.jsonc` + `worker/index.js` handle the deploy config and the
-dynamic routes (`/api/youtube`, `/api/schedule`, `/api/tiktok`,
+dynamic routes (`/api/youtube`, `/api/schedule`, `/api/calendar/*`, `/api/tiktok`,
 `/api/projects`, `/api/project-image/<repo>`, `/api/fortnite/*`);
 everything else is served directly as static files.
 
-## Updating your "next stream" time
+## Stream schedule (`/calendar`)
 
-When you're offline, the status card shows a "next stream" line pulled
-automatically from a public Google Calendar. Just add/edit events on that
-calendar — nothing to touch in the repo, nothing to redeploy.
+The schedule lives on the site itself now. **Edit it only at
+`/calendar/admin`**: every change is copied to the Twitch schedule
+automatically (one way: site → Twitch; edits made directly on Twitch are
+not read back).
 
-**One-time setup (already done, documented here for reference):**
+- `/calendar` — public month view (list on phones), shown in each
+  visitor's own time zone, plus an "Add to my calendar" feed at
+  `/api/calendar/ics`.
+- `/calendar/admin` — add / edit / delete streams, "repeat weekly for N
+  weeks" (each week is its own entry), Twitch category search, Twitch
+  sync status with Retry, and a one-time import from the old Twitch
+  schedule + Google Calendar (repeating Twitch entries are split into
+  individual weeks; the repeating series is only removed from Twitch once
+  every weekly copy made it on).
+- The homepage "next stream" card and the Fortnite page banner read from
+  it via `/api/schedule`. Until the calendar has any streams, they still
+  fall back to the Google Calendar feed (`CALENDAR_ICS_URL`).
+- Code: `worker/calendar.js` (data, public + admin API, import),
+  `worker/twitch.js` (Twitch sign-in + sync), `calendar.html`,
+  `calendar/admin.html`, `js/calendar.js`, `js/calendar-admin.js`,
+  `css/calendar.css`. Times are entered in Arizona time and stored in UTC.
 
-1. Made a public Google Calendar dedicated to the stream schedule (keep it
-   dedicated — "public" applies to the whole calendar).
-2. Grabbed its **secret address in iCal format** from Calendar → Settings
-   and sharing → Integrate calendar.
-3. Set that URL as a Cloudflare **secret** named `CALENDAR_ICS_URL` on this
-   Worker (Cloudflare dashboard → this project → Settings/Bindings →
-   Variables and Secrets → Add → type "Secret"). It's deliberately NOT
-   stored in this repo, since the repo is public and that URL lets anyone
-   holding it read your calendar's event details.
-4. `worker/index.js` reads `env.CALENDAR_ICS_URL`, fetches the feed, and
-   returns the earliest future event as JSON at `/api/schedule`.
+### One-time setup (Cloudflare dashboard)
 
-Because it's a secret (not a plain `vars` entry in `wrangler.jsonc`), it
-persists across every future git-triggered redeploy automatically — no
-need to re-enter it.
+1. **Database:** Storage & Databases → D1 → Create → name it
+   `vibesbyvince-calendar`. Put its Database ID in `wrangler.jsonc`
+   (`d1_databases[0].database_id`). Tables are created automatically.
+2. **Login for the admin page (Cloudflare Access / Zero Trust):** create a
+   self-hosted application covering `vibesbyvince.com/calendar/admin` and
+   `vibesbyvince.com/api/calendar/admin`, with a policy that allows only
+   your email (one-time PIN). Then add Worker secrets:
+   `ACCESS_TEAM_DOMAIN` (e.g. `yourteam.cloudflareaccess.com`),
+   `ACCESS_AUD` (the application's Audience tag) and `ADMIN_EMAIL`.
+   The Worker checks Access's signed token itself, so the admin API stays
+   closed if any of these are missing or wrong.
+3. **Twitch:** register an app at dev.twitch.tv/console with OAuth
+   redirect URL
+   `https://vibesbyvince.com/api/calendar/admin/twitch/callback`, then add
+   Worker secrets `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET`. Open
+   `/calendar/admin` → **Connect Twitch** (asks only for "Manage your
+   schedule"). Twitch only allows Affiliates/Partners to add one-off
+   schedule entries.
+4. In `/calendar/admin`, press **Import now** once.
 
-The "view schedule" link on the status card always points to your real
-Twitch schedule page (`twitch.tv/vibesbyvince/schedule`) too, so keep that
-updated on Twitch for anyone who wants the full calendar view.
+Local testing: `npx wrangler dev` uses a local database; put
+`DEV_ADMIN_BYPASS=true` in `.dev.vars` (git-ignored) to open the admin page
+on `127.0.0.1` without Access. The bypass only works on localhost.
 
 ## Updating your "latest TikTok" card
 

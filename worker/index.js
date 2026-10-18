@@ -8,6 +8,7 @@
 // even reaches this script. Only /api/* traffic runs the code below.
 
 import { handleFortnite } from './fortnite.js';
+import { handleCalendar, nextStream } from './calendar.js';
 
 const CHANNEL_ID = 'UCyqkH9sniDc1bEQwDcpky9w';
 
@@ -38,6 +39,11 @@ export default {
     // Fortnite Hub (/fortnite) — see worker/fortnite.js
     if (url.pathname.startsWith('/api/fortnite/')) {
       return handleFortnite(request, env, url);
+    }
+
+    // Stream calendar (/calendar, /calendar/admin) — see worker/calendar.js
+    if (url.pathname === '/api/calendar' || url.pathname.startsWith('/api/calendar/')) {
+      return handleCalendar(request, env, url);
     }
 
     // Fallback safety net — shouldn't normally be reached given
@@ -232,6 +238,15 @@ async function handleTiktok(request, env) {
 // Google's export marks it UTC directly.
 
 async function handleSchedule(env) {
+  // The site's own calendar (/calendar) comes first. Until it has any
+  // streams in it, the old Google Calendar feed below is still used.
+  try {
+    const own = await nextStream(env);
+    if (own) return json(own, 200, 'public, max-age=60');
+  } catch {
+    // fall through to Google Calendar
+  }
+
   try {
     const icsUrl = env.CALENDAR_ICS_URL;
     if (!icsUrl) throw new Error('CALENDAR_ICS_URL is not configured');

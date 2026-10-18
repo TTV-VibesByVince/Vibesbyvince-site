@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule Admin · VibesByVince</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#08050d">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/calendar.css">
+</head>
+<body>
+
+<div class="bg-glow" aria-hidden="true"></div>
+
+<!-- Protected by Cloudflare Access; the API also checks the login itself. -->
+<main class="page adm-page">
+
+  <div class="adm-bar">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1 class="adm-title">Schedule Admin</h1>
+      <a class="small-btn" href="/calendar" target="_blank" rel="noopener">view public calendar &nearr;</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="pill" id="twitch-pill">Twitch: checking&hellip;</span>
+      <a class="small-btn" id="twitch-connect" href="/api/calendar/admin/twitch/connect" hidden>Connect Twitch</a>
+      <button class="small-btn small-btn--danger" type="button" id="twitch-disconnect" hidden>Disconnect</button>
+      <span class="hint" id="signed-in"></span>
+      <a class="small-btn" href="/cdn-cgi/access/logout">log out</a>
+    </div>
+  </div>
+
+  <div class="notice notice--warn" id="admin-error" hidden></div>
+  <div class="notice" id="flash" hidden><span id="flash-text"></span><button class="small-btn" type="button" id="flash-close">Dismiss</button></div>
+
+  <div class="notice notice--info" id="import-box" hidden>
+    <span><b>One-time import:</b> copy your upcoming streams from your Twitch schedule and Google Calendar. Repeating Twitch entries become individual weeks. Connect Twitch first.</span>
+    <button class="small-btn" type="button" id="import-btn">Import now</button>
+  </div>
+
+  <div class="adm-layout">
+
+    <section class="panel" aria-labelledby="form-h">
+      <h2 id="form-h">Add a stream</h2>
+      <form class="form" id="event-form" autocomplete="off">
+        <input type="hidden" id="f-id">
+        <label><span class="label">Title (shows on the site and Twitch &middot; max 140)</span>
+          <input class="field" id="f-title" maxlength="140" required></label>
+
+        <div class="combo">
+          <label><span class="label">Twitch category</span>
+            <input class="field" id="f-cat" placeholder="search Twitch games…" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="cat-list"></label>
+          <input type="hidden" id="f-cat-id">
+          <ul class="combo__list" id="cat-list" role="listbox" hidden></ul>
+        </div>
+
+        <div class="row2">
+          <label><span class="label">Date</span><input class="field" type="date" id="f-date" required></label>
+          <label><span class="label">Start (Arizona time)</span><input class="field" type="time" id="f-time" required step="900"></label>
+        </div>
+        <div class="row2">
+          <label><span class="label">Length</span>
+            <select class="field" id="f-len">
+              <option value="60">1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="150">2.5 hours</option>
+              <option value="180" selected>3 hours</option>
+              <option value="240">4 hours</option>
+              <option value="300">5 hours</option>
+              <option value="360">6 hours</option>
+              <option value="480">8 hours</option>
+              <option value="720">12 hours</option>
+            </select></label>
+          <label><span class="label">Colour tag</span>
+            <select class="field" id="f-tag">
+              <option value="">Auto (from category)</option>
+              <option value="fortnite">Fortnite</option>
+              <option value="horror">Horror</option>
+              <option value="variety">Variety</option>
+              <option value="special">Special</option>
+            </select></label>
+        </div>
+
+        <div id="repeat-wrap">
+          <label class="check"><input type="checkbox" id="f-repeat"> Repeat weekly</label>
+          <div id="repeat-weeks" hidden style="display:flex;align-items:center;gap:10px;margin-top:10px;font-size:0.9rem">
+            for <input class="field" type="number" id="f-weeks" value="4" min="2" max="12" style="width:76px"> weeks
+          </div>
+          <p class="hint" style="margin:6px 0 0">Each week is saved as its own entry, so you can change or cancel one week later.</p>
+        </div>
+
+        <p class="form-msg" id="form-msg" role="status" aria-live="polite"></p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <button class="small-btn" type="button" id="f-cancel" hidden>Cancel edit</button>
+          <span class="hint" id="save-hint">Saves here and on your Twitch schedule.</span>
+          <button class="btn-primary" type="submit" id="f-save">Save stream</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="list-h">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px">
+        <h2 id="list-h" style="margin:0">Upcoming</h2>
+        <div style="display:flex;gap:6px" role="group" aria-label="Show">
+          <button class="small-btn is-on" type="button" data-when="upcoming">Upcoming</button>
+          <button class="small-btn" type="button" data-when="past">Past</button>
+        </div>
+      </div>
+      <div id="event-list"><p class="hint">Loading&hellip;</p></div>
+    </section>
+
+  </div>
+</main>
+
+<script src="/js/calendar-admin.js"></script>
+</body>
+</html>

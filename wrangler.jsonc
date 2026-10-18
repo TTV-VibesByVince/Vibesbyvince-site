@@ -8,5 +8,14 @@
     "run_worker_first": ["/api/*"],
     // unknown URLs get the styled 404.html (with a real 404 status)
     "not_found_handling": "404-page"
-  }
+  },
+  // Stream calendar database (/calendar). Created in the Cloudflare
+  // dashboard: Storage & Databases → D1 → "vibesbyvince-calendar".
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vibesbyvince-calendar",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ]
 }
