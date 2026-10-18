@@ -3,7 +3,8 @@
 Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed on
 Cloudflare Workers (static assets) — push to `main` and it redeploys.
 `wrangler.jsonc` + `worker/index.js` handle the deploy config and the
-dynamic routes (`/api/youtube`, `/api/schedule`, `/api/tiktok`);
+dynamic routes (`/api/youtube`, `/api/schedule`, `/api/tiktok`,
+`/api/projects`, `/api/project-image/<repo>`);
 everything else is served directly as static files.
 
 ## Updating your "next stream" time
@@ -73,6 +74,12 @@ profile.
   `run_worker_first` in `wrangler.jsonc`).
 - **Latest TikTok** — `/api/tiktok` reads `data/latest-tiktok.json` and
   adds the caption and cover image from TikTok's oEmbed (see above).
+- **Vibes Lab** — each card's description and preview image come from the
+  GitHub repo itself (its description and social preview image), via
+  `/api/projects` and `/api/project-image/<repo>`. Edit them on GitHub and
+  the site follows within ~6 hours. Images are passed through the Worker so
+  visitors never contact GitHub. To add a project, add its repo name to
+  `PROJECT_REPOS` in `worker/index.js` and add a card in `index.html`.
 - **Fonts** — Inter and Rajdhani are self-hosted in `assets/fonts`
   (SIL Open Font License, licence files alongside), so the page never
   contacts Google Fonts.

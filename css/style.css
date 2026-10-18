@@ -50,6 +50,7 @@
   --instagram: #e1306c;
   --bluesky: #1185fe;
   --govee: #ffb020;
+  --razer: #44d62c;
 
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -429,6 +430,34 @@ h1, h2, h3 {
   flex-shrink: 0;
 }
 
+/* stack of affiliate cards */
+.shops {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.shops .shopcard {
+  margin-bottom: 0;
+}
+
+/* Razer variant: same card, Razer green instead of Govee amber */
+.shopcard--razer {
+  border-color: rgba(68, 214, 44, 0.25);
+  background: rgba(68, 214, 44, 0.05);
+}
+
+.shopcard--razer:hover,
+.shopcard--razer:focus-visible {
+  border-color: var(--razer);
+  background: rgba(68, 214, 44, 0.09);
+}
+
+.shopcard--razer .shopcard__eyebrow,
+.shopcard--razer .shopcard__arrow {
+  color: var(--razer);
+}
+
 /* drop cards (latest clip / upload / post) */
 
 .drops {
@@ -626,10 +655,35 @@ h1, h2, h3 {
   background: rgba(155, 92, 255, 0.06);
 }
 
+/* GitHub social preview (2:1). The icon sits underneath as the fallback
+   and is covered once the image loads. */
+.project-card__media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 2 / 1;
+  margin: -6px -6px 16px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(155, 92, 255, 0.22), rgba(18, 11, 28, 0.9));
+}
+
+.project-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-card__image[hidden] {
+  display: none;
+}
+
 .project-card__icon {
-  width: 26px;
-  height: 26px;
-  margin-bottom: 12px;
+  width: 34px;
+  height: 34px;
   color: var(--purple);
 }
 

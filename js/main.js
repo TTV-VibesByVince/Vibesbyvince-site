@@ -150,3 +150,25 @@ async function updateLatestTikTok() {
 }
 
 updateLatestTikTok();
+
+/* ---------- Vibes Lab project descriptions ---------- */
+// /api/projects (worker/index.js) returns each repo's current GitHub
+// description, so editing it on GitHub updates the site. The preview
+// images load straight from /api/project-image/<repo> in the HTML. If the
+// fetch fails, the descriptions already in index.html stay.
+
+async function updateProjects() {
+  try {
+    const res = await fetch('/api/projects', { cache: 'no-store' });
+    const data = await res.json();
+    for (const p of data.projects || []) {
+      const card = document.querySelector(`.project-card[data-repo="${CSS.escape(p.repo)}"]`);
+      const textEl = card?.querySelector('.project-card__text');
+      if (textEl && p.description) textEl.textContent = p.description;
+    }
+  } catch (err) {
+    // keep the built-in descriptions
+  }
+}
+
+updateProjects();
