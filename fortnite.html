@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fortnite Hub · VibesByVince</title>
+<meta name="description" content="Look up your Fortnite stats, check today's Item Shop, and spin for your next drop spot and challenge. Use code VibesByVince in the Item Shop.">
+<meta name="theme-color" content="#060a14">
+<link rel="canonical" href="https://vibesbyvince.com/fortnite">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/fortnite.css">
+
+<meta property="og:title" content="Fortnite Hub · VibesByVince">
+<meta property="og:description" content="Stats lookup, today's Item Shop, drop spot and challenge randomizers. Use code VibesByVince!">
+<meta property="og:image" content="https://vibesbyvince.com/assets/banner.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/fortnite">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="fn">
+
+<div class="fn-glow" aria-hidden="true"></div>
+
+<!-- Live banner: filled in by js/fortnite.js (hidden until we know the status) -->
+<a class="live-banner" id="live-banner" href="https://twitch.tv/vibesbyvince" target="_blank" rel="noopener" hidden>
+  <span class="live-banner__chip">LIVE</span>
+  <span id="live-banner-text">Vince is live in Fortnite right now</span>
+  <span class="live-banner__cta">Watch on Twitch &rarr;</span>
+</a>
+<div class="next-banner" id="next-banner" hidden>
+  <span class="next-banner__dot" aria-hidden="true"></span>
+  <span id="next-banner-text"></span>
+  <a href="https://twitch.tv/vibesbyvince/schedule" target="_blank" rel="noopener">schedule &rarr;</a>
+</div>
+
+<main class="page">
+
+  <div class="topbar">
+    <a class="ghost" href="/">&larr; vibesbyvince.com</a>
+    <span class="topbar__note">fan site · not affiliated with Epic Games</span>
+  </div>
+
+  <header class="hero">
+    <h1 class="hero__title">Fortnite <span>Hub</span></h1>
+    <p class="hero__text">Look up your stats, check today's Item Shop, and let the randomizers decide your next drop.</p>
+  </header>
+
+  <!-- Support-A-Creator -->
+  <section class="code-card" aria-label="Support-A-Creator code">
+    <div class="code-card__text">
+      <span class="chip chip--orange">Support-A-Creator</span>
+      <span class="code-card__line">Use code <span class="code-card__code">VibesByVince</span> in the Item Shop</span>
+      <span class="code-card__note">It doesn't cost you anything extra and supports the stream. #EpicPartner</span>
+    </div>
+    <button class="btn" type="button" id="copy-code" data-code="VibesByVince">Copy code</button>
+  </section>
+
+  <!-- Stats lookup -->
+  <section class="panel" aria-labelledby="stats-h">
+    <div class="sec-head"><h2 id="stats-h" class="title">Stats Lookup</h2><span class="rule" aria-hidden="true"></span></div>
+    <p class="sec-sub">Enter an Epic username. Stats have to be public in Fortnite: Settings &rsaquo; Account and Privacy &rsaquo; turn on "Show on Career Leaderboard".</p>
+
+    <form class="lookup" id="stats-form" autocomplete="off">
+      <label class="lookup__name"><span class="label">Epic username</span>
+        <input class="field" type="text" name="name" id="stats-name" minlength="3" maxlength="32" required spellcheck="false" placeholder="your Epic name"></label>
+      <label><span class="label">Platform</span>
+        <select class="field" name="platform" id="stats-platform">
+          <option value="epic">Epic (PC)</option>
+          <option value="psn">PlayStation</option>
+          <option value="xbl">Xbox</option>
+        </select></label>
+      <button class="btn" type="submit" id="stats-submit">Look up</button>
+    </form>
+
+    <p class="stats-message" id="stats-message" role="status" aria-live="polite"></p>
+
+    <div class="stats-card" id="stats-card" hidden>
+      <div class="stats-card__head">
+        <div class="stats-card__who">
+          <span class="stats-card__avatar" id="stats-avatar" aria-hidden="true">?</span>
+          <div><span class="stats-card__name" id="stats-player"></span><span class="stats-card__meta" id="stats-meta"></span></div>
+        </div>
+        <div class="tabs" id="stats-window" role="group" aria-label="Time period">
+          <button type="button" class="tab is-on" data-window="lifetime">Lifetime</button>
+          <button type="button" class="tab" data-window="season">This season</button>
+        </div>
+      </div>
+      <div class="tabs tabs--modes" id="stats-modes" role="group" aria-label="Game mode">
+        <button type="button" class="tab is-on" data-mode="overall">Overall</button>
+        <button type="button" class="tab" data-mode="solo">Solo</button>
+        <button type="button" class="tab" data-mode="duos">Duos</button>
+        <button type="button" class="tab" data-mode="squads">Squads</button>
+      </div>
+      <div class="statgrid" id="stats-grid"></div>
+    </div>
+  </section>
+
+  <!-- Item shop -->
+  <section class="panel" aria-labelledby="shop-h">
+    <div class="sec-head"><h2 id="shop-h" class="title">Today's Item Shop</h2><span class="rule" aria-hidden="true"></span>
+      <span class="timer">resets in <b id="shop-timer">--:--:--</b></span>
+    </div>
+    <p class="sec-sub">Updates every day at 5:00 PM Arizona time. Buying something? Use code <b>VibesByVince</b>.</p>
+
+    <div class="tabs" id="shop-filters" role="group" aria-label="Filter the shop">
+      <button type="button" class="tab is-on" data-filter="all">All</button>
+      <button type="button" class="tab" data-filter="new">New today</button>
+      <button type="button" class="tab" data-filter="outfit">Outfits</button>
+      <button type="button" class="tab" data-filter="emote">Emotes</button>
+      <button type="button" class="tab" data-filter="pickaxe">Pickaxes</button>
+      <button type="button" class="tab" data-filter="backpack">Back Blings</button>
+      <button type="button" class="tab" data-filter="bundle">Bundles</button>
+      <button type="button" class="tab" data-filter="leaving">Leaving tonight</button>
+    </div>
+
+    <p class="shop-message" id="shop-message" role="status">Loading today's shop&hellip;</p>
+    <div id="shop-sections"></div>
+  </section>
+
+  <!-- Randomizers -->
+  <div class="tools">
+    <section class="panel" aria-labelledby="drop-h">
+      <div class="sec-head"><h2 id="drop-h" class="title">Where We Dropping?</h2><span class="rule" aria-hidden="true"></span></div>
+      <p class="sec-sub">Spin for a random landing spot on the current map.</p>
+      <div class="map" id="drop-map">
+        <img class="map__img" id="drop-map-img" alt="Current Fortnite map" width="2048" height="2048" hidden>
+        <span class="map__marker" id="drop-marker" hidden></span>
+      </div>
+      <div class="tool-foot">
+        <div><span class="label">You're landing at</span><span class="tool-result" id="drop-name">Hit spin!</span></div>
+        <button class="btn" type="button" id="drop-spin">Spin</button>
+      </div>
+      <label class="check"><input type="checkbox" id="drop-major"> named locations only</label>
+    </section>
+
+    <section class="panel panel--flex" aria-labelledby="chal-h">
+      <div class="sec-head"><h2 id="chal-h" class="title">Challenge Roulette</h2><span class="rule" aria-hidden="true"></span></div>
+      <p class="sec-sub">Make your next match harder (and funnier).</p>
+      <div class="challenge" aria-live="polite">
+        <span class="chip chip--sky" id="chal-tag">Ready?</span>
+        <span class="challenge__text" id="chal-text">Spin for a challenge</span>
+      </div>
+      <div class="tool-foot">
+        <div class="tabs" id="chal-filters" role="group" aria-label="Challenge type">
+          <button type="button" class="tab is-on" data-chal="any">Any</button>
+          <button type="button" class="tab" data-chal="solo">Solo</button>
+          <button type="button" class="tab" data-chal="squad">Squads</button>
+        </div>
+        <button class="btn" type="button" id="chal-spin">New challenge</button>
+      </div>
+    </section>
+  </div>
+
+  <footer class="fn-footer">
+    Fortnite is a trademark of Epic Games, Inc. This is a fan site and is not affiliated with or endorsed by Epic Games.<br>
+    Stats, shop and map data from <a href="https://fortnite-api.com" target="_blank" rel="noopener">fortnite-api.com</a> &middot; <a href="/privacy">privacy</a>
+  </footer>
+
+</main>
+
+<a class="fab" href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener" aria-label="Join the Discord">
+  <svg class="fab__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.53.07.07 0 0 0-.08.04c-.21.38-.45.87-.61 1.26a18.3 18.3 0 0 0-5.48 0 12.6 12.6 0 0 0-.63-1.26.08.08 0 0 0-.08-.04c-1.71.29-3.36.8-4.93 1.53a.07.07 0 0 0-.03.03C.87 8.6.2 12.7.53 16.76a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 5.99 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.23-2a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.9.08.08 0 0 1 0-.13c.13-.09.25-.19.37-.28a.07.07 0 0 1 .08 0c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08 0c.12.1.24.19.37.28a.08.08 0 0 1 0 .13c-.6.35-1.22.65-1.87.9a.08.08 0 0 0-.04.11c.36.7.78 1.37 1.23 2a.08.08 0 0 0 .08.03 19.8 19.8 0 0 0 6-3.03.08.08 0 0 0 .03-.06c.4-4.7-.67-8.76-2.83-12.37a.06.06 0 0 0-.03-.03ZM8.68 14.3c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.15-2.42 1.21 0 2.17 1.1 2.15 2.42 0 1.34-.94 2.42-2.15 2.42Zm6.65 0c-1.18 0-2.15-1.08-2.15-2.42 0-1.33.95-2.42 2.150-2.42 1.21 0 2.17 1.1 2.15 2.42 0 1.34-.93 2.42-2.15 2.42Z"/></svg>
+  <span class="fab__text">Join the Discord</span>
+</a>
+
+<script src="/js/fortnite.js"></script>
+</body>
+</html>

@@ -7,6 +7,8 @@
 // starting with /api/ is served directly from the static files and never
 // even reaches this script. Only /api/* traffic runs the code below.
 
+import { handleFortnite } from './fortnite.js';
+
 const CHANNEL_ID = 'UCyqkH9sniDc1bEQwDcpky9w';
 
 export default {
@@ -31,6 +33,11 @@ export default {
 
     if (url.pathname.startsWith('/api/project-image/')) {
       return handleProjectImage(url.pathname.slice('/api/project-image/'.length));
+    }
+
+    // Fortnite Hub (/fortnite) — see worker/fortnite.js
+    if (url.pathname.startsWith('/api/fortnite/')) {
+      return handleFortnite(request, env, url);
     }
 
     // Fallback safety net — shouldn't normally be reached given
