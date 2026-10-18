@@ -4,7 +4,7 @@ Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed on
 Cloudflare Workers (static assets) — push to `main` and it redeploys.
 `wrangler.jsonc` + `worker/index.js` handle the deploy config and the
 dynamic routes (`/api/youtube`, `/api/schedule`, `/api/tiktok`,
-`/api/projects`, `/api/project-image/<repo>`);
+`/api/projects`, `/api/project-image/<repo>`, `/api/fortnite/*`);
 everything else is served directly as static files.
 
 ## Updating your "next stream" time
@@ -87,6 +87,29 @@ profile.
   Update it if you ever add analytics, embeds, forms or cookies.
 - **404 page** — unknown URLs get `404.html` (`not_found_handling` in
   `wrangler.jsonc`).
+
+## Fortnite Hub (`/fortnite`)
+
+`fortnite.html` + `css/fortnite.css` + `js/fortnite.js`, with its API in
+`worker/fortnite.js`. Data comes from [fortnite-api.com](https://fortnite-api.com)
+(unofficial; Epic has no public API), always fetched server-side and cached:
+
+- **Item Shop** — `/api/fortnite/shop`, cached until the daily reset
+  (00:00 UTC = 5:00 PM Arizona). No key needed.
+- **Drop spot randomizer** — `/api/fortnite/map`, the current map and its
+  named locations. No key needed. Marker positions use `MAP_FIT` in
+  `worker/fortnite.js`; if markers drift after a big map change, re-fit it.
+- **Stats lookup** — `/api/fortnite/stats`. Needs a free API key from
+  fortnite-api.com stored as a Cloudflare **secret** named
+  `FORTNITE_API_KEY` (same place as `CALENDAR_ICS_URL`). Without it the
+  page says "being set up". Only players with public stats can be shown.
+- **Images** — `/api/fortnite/img?u=…` passes fortnite-api.com images
+  through the site; nothing else can be fetched through it.
+- **Creator code** — `VibesByVince`, in `fortnite.html` (two places).
+- **Challenges** — the `CHALLENGES` list in `js/fortnite.js`.
+
+For local testing of the stats lookup, put `FORTNITE_API_KEY=...` in a
+`.dev.vars` file (git-ignored) and run `npx wrangler dev`.
 
 ## Local preview
 
