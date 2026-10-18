@@ -25,6 +25,14 @@ export default {
       return handleTiktok(request, env);
     }
 
+    if (url.pathname === '/api/projects') {
+      return handleProjects();
+    }
+
+    if (url.pathname.startsWith('/api/project-image/')) {
+      return handleProjectImage(url.pathname.slice('/api/project-image/'.length));
+    }
+
     // Fallback safety net — shouldn't normally be reached given
     // run_worker_first is scoped to /api/*.
     return env.ASSETS.fetch(request);
@@ -63,6 +71,94 @@ async function handleYoutube() {
     return json(data, 200, 'public, max-age=600, s-maxage=1800');
   } catch (err) {
     return json({ error: true, message: String(err) }, 200, 'public, max-age=60');
+  }
+}
+
+// ---------- /api/projects + /api/project-image/<repo> ----------
+//
+// The Vibes Lab cards show each repo's own GitHub description and social
+// preview image, so editing them on GitHub updates the site too (within
+// ~6 hours, the cache time). Both come from the repo's public GitHub page
+// (its <meta> tags), which needs no API key and isn't subject to the
+// 60-requests-an-hour limit of GitHub's unauthenticated API.
+//
+// Images are passed through this Worker rather than linked directly, so
+// visitors' browsers never contact GitHub. Only the repos listed below can
+// be looked up — the route can't be used to fetch anything else.
+
+const GITHUB_OWNER = 'TTV-VibesByVince';
+const PROJECT_REPOS = ['Govee-Lights-Controller', 'Vibes-TV'];
+const PROJECT_IMAGE_HOSTS = ['repository-images.githubusercontent.com', 'opengraph.githubassets.com'];
+const PROJECT_CACHE_SECONDS = 6 * 60 * 60;
+
+async function fetchRepoMeta(repo) {
+  const pageUrl = `https://github.com/${GITHUB_OWNER}/${repo}`;
+  const res = await fetch(pageUrl, {
+    headers: { 'user-agent': 'vibesbyvince.com (+https://vibesbyvince.com)' },
+    cf: { cacheTtl: PROJECT_CACHE_SECONDS, cacheEverything: true },
+  });
+  if (!res.ok) throw new Error(`${repo}: ${res.status}`);
+  const html = await res.text();
+
+  const meta = (attr, name) => {
+    const re = new RegExp(`<meta[^>]+${attr}="${name}"[^>]+content="([^"]*)"`, 'i');
+    const m = html.match(re);
+    return m ? decodeXmlEntities(m[1]) : null;
+  };
+
+  // GitHub's description tag reads "<repo description> - owner/repo".
+  let description = meta('name', 'description') || '';
+  const suffix = ` - ${GITHUB_OWNER}/${repo}`;
+  if (description.endsWith(suffix)) description = description.slice(0, -suffix.length);
+
+  const image = meta('property', 'og:image');
+  let imageOk = false;
+  try {
+    imageOk = !!image && PROJECT_IMAGE_HOSTS.includes(new URL(image).hostname);
+  } catch {
+    imageOk = false;
+  }
+
+  return { repo, url: pageUrl, description: description.trim(), image: imageOk ? image : null };
+}
+
+async function handleProjects() {
+  const results = await Promise.allSettled(PROJECT_REPOS.map(fetchRepoMeta));
+  const projects = results
+    .filter((r) => r.status === 'fulfilled')
+    .map(({ value }) => ({
+      repo: value.repo,
+      url: value.url,
+      description: value.description,
+      image: value.image ? `/api/project-image/${value.repo}` : null,
+    }));
+  return json({ projects }, 200, `public, max-age=3600, s-maxage=${PROJECT_CACHE_SECONDS}`);
+}
+
+async function handleProjectImage(repo) {
+  if (!PROJECT_REPOS.includes(repo)) {
+    return new Response('not found', { status: 404 });
+  }
+  try {
+    const { image } = await fetchRepoMeta(repo);
+    if (!image) throw new Error('no preview image');
+
+    const imgRes = await fetch(image, {
+      cf: { cacheTtl: PROJECT_CACHE_SECONDS, cacheEverything: true },
+    });
+    const type = imgRes.headers.get('content-type') || '';
+    if (!imgRes.ok || !type.startsWith('image/')) throw new Error('image fetch failed');
+
+    return new Response(imgRes.body, {
+      status: 200,
+      headers: {
+        'content-type': type,
+        'cache-control': `public, max-age=86400, s-maxage=${PROJECT_CACHE_SECONDS}`,
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  } catch {
+    return new Response('not found', { status: 404, headers: { 'cache-control': 'public, max-age=300' } });
   }
 }
 

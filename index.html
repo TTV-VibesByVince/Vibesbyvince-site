@@ -146,7 +146,7 @@
     <div class="panel__head-row">
       <div>
         <h2 id="projects-heading" class="panel__heading">Vibes Lab</h2>
-        <p class="panel__subheading">a collection of things I've built to make the stream a little more ridiculous</p>
+        <p class="panel__subheading">open-source tools I built for my own stream and share for free. anyone can grab them, use them and make them their own.</p>
       </div>
       <a class="ghost-btn" href="https://github.com/TTV-VibesByVince" target="_blank" rel="noopener">
         <svg class="ghost-btn__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/></svg>
@@ -156,14 +156,18 @@
 
     <div class="project-grid">
 
-      <a class="project-card" href="https://github.com/TTV-VibesByVince/Govee-Lights-Controller" target="_blank" rel="noopener">
-        <svg class="project-card__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>
-        <h3 class="project-card__title">govee lights controller</h3>
+      <!-- Description and preview image are refreshed from the GitHub repo by
+           js/main.js via /api/projects; the text below is the fallback. -->
+      <a class="project-card" data-repo="Govee-Lights-Controller" href="https://github.com/TTV-VibesByVince/Govee-Lights-Controller" target="_blank" rel="noopener">
+        <span class="project-card__media">
+          <img class="project-card__image" src="/api/project-image/Govee-Lights-Controller" alt="" width="1280" height="640" loading="lazy" decoding="async" onerror="this.hidden=true">
+          <svg class="project-card__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>
+        </span>
+        <h3 class="project-card__title">Govee Lights Controller</h3>
         <p class="project-card__text">
-          a windows app that lets chat run my room lights. every command, channel-point reward or
-          alert from mixitup or streamer.bot is just a web request, and the lights react instantly
-          over the home network: colours, effects, scenes, alert presets, plus gifs on govee
-          curtain lights, including gif links from chat and viewers' profile pictures.
+          Your Govee lights, run by chat. Control Govee lights from MixItUp, Streamer.bot or any
+          web request: 13 effects, scenes, alert presets, and GIFs on Govee Curtain Lights.
+          Python + Pillow, Windows.
         </p>
         <div class="project-card__tags">
           <span class="tag">python</span>
@@ -173,14 +177,15 @@
         <span class="project-card__link">view on github &rarr;</span>
       </a>
 
-      <a class="project-card" href="https://github.com/TTV-VibesByVince/Vibes-TV" target="_blank" rel="noopener">
-        <svg class="project-card__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 7h18v11H3zM8 21h8M12 18v3M8 3l4 4 4-4"/></svg>
-        <h3 class="project-card__title">vibe tv</h3>
+      <a class="project-card" data-repo="Vibes-TV" href="https://github.com/TTV-VibesByVince/Vibes-TV" target="_blank" rel="noopener">
+        <span class="project-card__media">
+          <img class="project-card__image" src="/api/project-image/Vibes-TV" alt="" width="1280" height="640" loading="lazy" decoding="async" onerror="this.hidden=true">
+          <svg class="project-card__icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 7h18v11H3zM8 21h8M12 18v3M8 3l4 4 4-4"/></svg>
+        </span>
+        <h3 class="project-card__title">Vibe TV</h3>
         <p class="project-card__text">
-          a stream tv for the wall behind me. it loops my logo, then takes over for shoutouts,
-          raids, follows and gifted subs, can play one of the raider's own twitch clips, and sets
-          the room lights to the colour of their profile picture. triggered by mixitup, runs in
-          docker on my nas.
+          Stream TV for the wall behind you: loops your logo and shows shoutout, raid, follow and
+          gifted-sub screens with Twitch clips and light sync, triggered by MixItUp. Runs in Docker.
         </p>
         <div class="project-card__tags">
           <span class="tag">python</span>
