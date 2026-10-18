@@ -458,6 +458,75 @@ h1, h2, h3 {
   color: var(--razer);
 }
 
+/* Fortnite Hub promo card — borrows the /fortnite page's blue + yellow */
+
+.fn-promo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: -16px 0 48px;
+  padding: 20px 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(90, 170, 255, 0.4);
+  background:
+    radial-gradient(ellipse 60% 120% at 100% 50%, rgba(46, 196, 255, 0.22), transparent 70%),
+    linear-gradient(120deg, #0b3fbf, #0a1a3d 60%);
+  color: #f2f6ff;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fn-promo:hover,
+.fn-promo:focus-visible {
+  color: #fff;
+  transform: translateY(-2px);
+  border-color: #ffd60a;
+  box-shadow: 0 10px 30px rgba(30, 123, 255, 0.35);
+}
+
+.fn-promo__text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.fn-promo__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ffd60a;
+}
+
+.fn-promo__title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 3px 0 #0b3fbf;
+}
+
+.fn-promo__title span { color: #2ec4ff; }
+
+.fn-promo__sub { font-size: 0.85rem; color: #c9d6ee; }
+
+.fn-promo__btn {
+  flex-shrink: 0;
+  padding: 10px 22px;
+  background: linear-gradient(180deg, #ffe55c, #ffd60a);
+  color: #141008;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+@media (max-width: 620px) {
+  .fn-promo { flex-direction: column; align-items: flex-start; }
+  .fn-promo__btn { align-self: flex-end; }
+}
+
 /* drop cards (latest clip / upload / post) */
 
 .drops {
