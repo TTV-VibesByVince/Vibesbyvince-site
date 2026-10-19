@@ -80,6 +80,43 @@ async function updateLiveStatus() {
 updateLiveStatus();
 setInterval(updateLiveStatus, 60000);
 
+/* ---------- Latest Twitch clip ---------- */
+// /api/clip (worker/clip.js) finds the newest clip on the channel. If
+// there's none (or Twitch is down) the card keeps linking to the clips page.
+
+async function updateLatestClip() {
+  const card = document.getElementById('drop-clip');
+  const titleEl = document.getElementById('drop-clip-title');
+  const eyebrowEl = document.getElementById('drop-clip-eyebrow');
+  const thumbEl = document.getElementById('drop-clip-thumb');
+  const iconEl = document.getElementById('drop-clip-icon');
+  if (!card || !titleEl) return;
+
+  try {
+    const res = await fetch('/api/clip', { cache: 'no-store' });
+    const data = await res.json();
+    if (data.error || !data.url) throw new Error('no clip');
+
+    card.href = data.url;
+    titleEl.textContent = data.title || 'watch the latest clip';
+    if (eyebrowEl) eyebrowEl.textContent = 'latest clip';
+    if (thumbEl && data.thumbnail) {
+      thumbEl.onload = () => {
+        thumbEl.hidden = false;
+        if (iconEl) iconEl.hidden = true;
+      };
+      thumbEl.onerror = () => {
+        thumbEl.hidden = true;
+      };
+      thumbEl.src = data.thumbnail;
+    }
+  } catch (err) {
+    // keep the "watch on twitch" link to the clips page
+  }
+}
+
+updateLatestClip();
+
 /* ---------- Latest YouTube upload ---------- */
 // Backed by /api/youtube in worker/index.js, which reads the channel's
 // public RSS feed server-side (avoids browser CORS issues with

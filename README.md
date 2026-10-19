@@ -85,8 +85,10 @@ profile.
   `/api/schedule` (your Google Calendar, see above) when offline. Fails
   silently if unreachable. The Twitch link card also picks up a small
   "live" badge when you're live.
-- **Latest clips** — links to `twitch.tv/vibesbyvince/clips`. (It used to
-  point at DecAPI's clip endpoint, which now returns a 404.)
+- **Latest clip** — `/api/clip` (`worker/clip.js`) finds the newest clip
+  on the channel (last 7 days, then 30, then a year) using the Twitch app
+  keys, and the card shows its thumbnail and title. Cached ~10 minutes.
+  With no clips it links to `twitch.tv/vibesbyvince/clips`.
 - **Latest YouTube upload** — `worker/index.js` handles requests to
   `/api/youtube` by reading your channel's public RSS feed server-side
   (avoids browser CORS issues) and returning the newest video. It can't
