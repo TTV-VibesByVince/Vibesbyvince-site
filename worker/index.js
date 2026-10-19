@@ -10,6 +10,7 @@
 import { handleFortnite } from './fortnite.js';
 import { handleCalendar, nextStream } from './calendar.js';
 import { handleStreamTeams } from './streamteams.js';
+import { handleClip } from './clip.js';
 
 const CHANNEL_ID = 'UCyqkH9sniDc1bEQwDcpky9w';
 
@@ -23,6 +24,10 @@ export default {
 
     if (url.pathname === '/api/schedule') {
       return handleSchedule(env);
+    }
+
+    if (url.pathname === '/api/clip') {
+      return handleClip(request, env);
     }
 
     if (url.pathname === '/api/tiktok') {

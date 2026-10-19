@@ -11,14 +11,16 @@
 //
 // To add or remove a team: edit TEAMS (the part after twitch.tv/team/).
 
+import { appHelix as helix } from './twitch-app.js';
+
 const TEAMS = ['lllicit', 'sokasquad', 'finestfam', 'nasu', 'capycafe', 'tizzytavern', 'pizzapartytv'];
 const SELF_LOGIN = 'vibesbyvince'; // don't suggest raiding yourself
 
-const HELIX = 'https://api.twitch.tv/helix';
 const LIVE_CACHE_SECONDS = 60; // live list refresh
 const ROSTER_CACHE_SECONDS = 6 * 3600; // team member lists change rarely
 const CACHE_VERSION = 1;
-const IMAGE_HOSTS = ['static-cdn.jtvnw.net'];
+// Twitch image hosts (avatars, live previews, clip thumbnails)
+const IMAGE_HOSTS = ['static-cdn.jtvnw.net', 'clips-media-assets2.twitch.tv'];
 
 export async function handleStreamTeams(request, env, url) {
   try {
@@ -134,44 +136,9 @@ async function getRosters(env, request) {
   return (await res.json()).teams;
 }
 
-// ---------- Twitch app token ----------
-
-let appToken = { token: null, exp: 0 };
-
-async function token(env) {
-  if (appToken.token && appToken.exp - Date.now() > 300000) return appToken.token;
-  const res = await fetch('https://id.twitch.tv/oauth2/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: env.TWITCH_CLIENT_ID,
-      client_secret: env.TWITCH_CLIENT_SECRET,
-      grant_type: 'client_credentials',
-    }),
-  });
-  if (!res.ok) throw new Error(`Twitch token: ${res.status}`);
-  const j = await res.json();
-  appToken = { token: j.access_token, exp: Date.now() + (j.expires_in || 3600) * 1000 };
-  return appToken.token;
-}
-
-async function helix(env, path) {
-  let res = await fetch(`${HELIX}${path}`, {
-    headers: { authorization: `Bearer ${await token(env)}`, 'client-id': env.TWITCH_CLIENT_ID },
-  });
-  if (res.status === 401) {
-    appToken = { token: null, exp: 0 };
-    res = await fetch(`${HELIX}${path}`, {
-      headers: { authorization: `Bearer ${await token(env)}`, 'client-id': env.TWITCH_CLIENT_ID },
-    });
-  }
-  if (!res.ok) throw new Error(`Twitch ${path.split('?')[0]}: ${res.status}`);
-  return res.json();
-}
-
 // ---------- image pass-through ----------
 
-function proxied(src) {
+export function proxied(src) {
   return `/api/streamteams/img?u=${encodeURIComponent(src)}`;
 }
 
