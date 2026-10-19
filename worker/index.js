@@ -9,6 +9,7 @@
 
 import { handleFortnite } from './fortnite.js';
 import { handleCalendar, nextStream } from './calendar.js';
+import { handleStreamTeams } from './streamteams.js';
 
 const CHANNEL_ID = 'UCyqkH9sniDc1bEQwDcpky9w';
 
@@ -39,6 +40,11 @@ export default {
     // Fortnite Hub (/fortnite) — see worker/fortnite.js
     if (url.pathname.startsWith('/api/fortnite/')) {
       return handleFortnite(request, env, url);
+    }
+
+    // Stream teams raid finder (/streamteams) — see worker/streamteams.js
+    if (url.pathname === '/api/streamteams' || url.pathname.startsWith('/api/streamteams/')) {
+      return handleStreamTeams(request, env, url);
     }
 
     // Stream calendar (/calendar, /calendar/admin) — see worker/calendar.js

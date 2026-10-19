@@ -133,6 +133,23 @@ profile.
 For local testing of the stats lookup, put `FORTNITE_API_KEY=...` in a
 `.dev.vars` file (git-ignored) and run `npx wrangler dev`.
 
+## Stream teams raid finder (`/streamteams`)
+
+`streamteams.html` + `css/streamteams.css` + `js/streamteams.js`, API in
+`worker/streamteams.js`. Shows who's live across the Twitch teams in
+`TEAMS` (edit that list to add or remove a team), with team, game, search
+and sort filters, plus a "Copy /raid" button per streamer. Members on
+several teams appear once with every team badge; `vibesbyvince` itself is
+left out.
+
+- Uses a Twitch *app* token from the same `TWITCH_CLIENT_ID` /
+  `TWITCH_CLIENT_SECRET` as the calendar (public data only; it doesn't use
+  your Twitch login).
+- Live list cached 60 s at the edge, team rosters 6 h. Avatars and live
+  previews pass through `/api/streamteams/img` (static-cdn.jtvnw.net only).
+- Local design testing without Twitch keys: `STREAMTEAMS_SAMPLE=true` in
+  `.dev.vars` (only works on localhost).
+
 ## Local preview
 
 

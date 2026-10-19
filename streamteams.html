@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stream Teams · VibesByVince</title>
+<meta name="description" content="Who's live right now across the Twitch stream teams VibesByVince is on. Filter by team or game.">
+<meta name="theme-color" content="#08050d">
+<link rel="canonical" href="https://vibesbyvince.com/streamteams">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/calendar.css">
+<link rel="stylesheet" href="/css/streamteams.css">
+
+<meta property="og:title" content="Stream Teams · VibesByVince">
+<meta property="og:description" content="Who's live right now across my Twitch stream teams.">
+<meta property="og:image" content="https://vibesbyvince.com/assets/banner.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/streamteams">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="page st-page">
+
+  <div class="cal-top">
+    <a class="ghost-btn" href="/">&larr; vibesbyvince.com</a>
+    <span class="st-updated" id="updated" aria-live="polite"><span class="st-dot" aria-hidden="true"></span>loading&hellip;</span>
+  </div>
+
+  <header class="st-header">
+    <div>
+      <h1 class="cal-title">Stream Teams</h1>
+      <p class="cal-sub">Who's live right now across the teams I'm on. Perfect for picking a raid.</p>
+    </div>
+    <div class="st-stats">
+      <div class="st-stat"><b id="live-count">–</b><span>live now</span></div>
+      <div class="st-stat"><b id="team-count">–</b><span>teams</span></div>
+    </div>
+  </header>
+
+  <section class="st-filters" aria-label="Filters">
+    <div class="st-chips" id="team-chips" role="group" aria-label="Team"></div>
+    <div class="st-row">
+      <label class="st-label">Game
+        <select class="field st-select" id="game-filter"><option value="">All games</option></select></label>
+      <label class="st-label">Sort
+        <select class="field st-select" id="sort">
+          <option value="viewers">Most viewers</option>
+          <option value="small">Fewest viewers (small streamers first)</option>
+          <option value="long">Live the longest</option>
+          <option value="new">Just went live</option>
+        </select></label>
+      <input class="field st-search" type="search" id="search" placeholder="search a name…" aria-label="Search streamers">
+    </div>
+  </section>
+
+  <p class="st-summary" id="summary" role="status"></p>
+  <div class="st-grid" id="grid"></div>
+  <div class="st-empty" id="empty" hidden></div>
+
+  <details class="st-offline" id="offline-box" hidden>
+    <summary id="offline-summary">Offline right now</summary>
+    <div class="st-offline__list" id="offline-list"></div>
+  </details>
+
+  <footer class="site-footer">
+    <p>Live info from Twitch &middot; &copy; <span id="year"></span> vibesbyvince &middot; <a class="site-footer__link" href="/privacy">privacy</a></p>
+  </footer>
+</main>
+
+<script src="/js/streamteams.js"></script>
+</body>
+</html>
