@@ -529,9 +529,11 @@ h1, h2, h3 {
 
 /* drop cards (latest clip / upload / post) */
 
+/* minmax(0, 1fr) keeps the three cards equal width no matter how long a
+   title is (plain 1fr lets a long title stretch its column) */
 .drops {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -545,6 +547,7 @@ h1, h2, h3 {
   background: rgba(255, 255, 255, 0.015);
   text-decoration: none;
   color: var(--text);
+  min-width: 0;
   transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
@@ -609,18 +612,23 @@ h1, h2, h3 {
   color: var(--text-dim);
 }
 
+/* titles wrap onto at most two lines, so every card has the same shape */
 .dropcard__title {
   font-size: 0.86rem;
   font-weight: 600;
+  line-height: 1.35;
+  min-height: 2.7em;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
 }
 
 .dropcard__arrow {
   font-size: 0.8rem;
   color: var(--text-dim);
-  margin-top: 2px;
+  margin-top: auto; /* arrows line up along the bottom */
 }
 
 /* panels */
@@ -1010,9 +1018,6 @@ h1, h2, h3 {
     padding: 24px;
   }
 
-  .dropcard__title {
-    white-space: normal;
-  }
 
   .shopcard {
     flex-direction: column;
