@@ -5,7 +5,9 @@
   "assets": {
     "directory": "./",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    // /assets/video/* also goes through the Worker so videos support
+    // partial (Range) requests, which iPhone Safari needs to play them
+    "run_worker_first": ["/api/*", "/assets/video/*"],
     // unknown URLs get the styled 404.html (with a real 404 status)
     "not_found_handling": "404-page"
   },
