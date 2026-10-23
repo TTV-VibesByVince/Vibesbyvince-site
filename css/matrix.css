@@ -1,0 +1,259 @@
+/* ===== VibesByVince — the secret: video takeover + Matrix mode =====
+   Loaded on every public page; does nothing until js/easter-egg.js
+   opens the takeover (.egg) or turns on html.matrix-mode. */
+
+/* ---------- video takeover ---------- */
+
+html.egg-open { overflow: hidden; }
+
+.egg {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #f4effa;
+  font-family: 'Inter', system-ui, sans-serif;
+  animation: egg-in 0.35s ease-out;
+}
+
+@keyframes egg-in { from { opacity: 0; } to { opacity: 1; } }
+
+.egg__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+
+.egg__skip,
+.egg__sound {
+  position: absolute;
+  z-index: 2;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(157, 255, 179, 0.45);
+  background: rgba(0, 0, 0, 0.6);
+  color: #e6ffe9;
+  font: 600 0.9rem 'Inter', sans-serif;
+  white-space: pre;
+  cursor: pointer;
+}
+
+.egg__skip { top: 20px; right: 20px; }
+.egg__sound { bottom: 24px; left: 50%; transform: translateX(-50%); }
+
+.egg__card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 620px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.egg__kicker { margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 0.95rem; color: #5fd47a; }
+
+.egg__title {
+  margin: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(2.6rem, 7vw, 4rem);
+  line-height: 0.95;
+  color: #39ff6a;
+  text-shadow: 0 0 24px rgba(57, 255, 106, 0.7);
+}
+
+.egg__text { margin: 0; font-size: 1.1rem; line-height: 1.6; color: #c8ffd4; }
+
+.egg__row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+.egg__btn {
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(157, 255, 179, 0.45);
+  background: transparent;
+  color: #e6ffe9;
+  font: 700 1rem 'Inter', sans-serif;
+  cursor: pointer;
+}
+
+.egg__btn--primary { background: #39ff6a; border-color: #39ff6a; color: #001a06; }
+.egg__btn:focus-visible, .egg__skip:focus-visible, .egg__again:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+.egg__again {
+  border: 0;
+  background: none;
+  color: #8fd9a0;
+  font: 600 0.9rem 'Inter', sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+/* ---------- Matrix mode ---------- */
+
+.matrix-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.matrix-exit {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(57, 255, 106, 0.5);
+  background: rgba(0, 8, 2, 0.92);
+  color: #c8ffd4;
+  font: 700 0.8rem ui-monospace, Consolas, monospace;
+  cursor: pointer;
+}
+
+.matrix-exit:hover { background: rgba(57, 255, 106, 0.15); color: #fff; }
+
+html.matrix-mode {
+  --bg: #000;
+  --bg-panel: rgba(0, 8, 2, 0.85);
+  --border: rgba(57, 255, 106, 0.35);
+  --text: #c8ffd4;
+  --text-dim: #5fd47a;
+  --purple: #39ff6a;
+  --pink: #39ff6a;
+  --gradient: linear-gradient(#39ff6a, #39ff6a);
+  --cal-grad: linear-gradient(#39ff6a, #39ff6a);
+  --twitch: #39ff6a;
+  --tiktok: #39ff6a;
+  --youtube: #39ff6a;
+  --discord: #39ff6a;
+  --instagram: #39ff6a;
+  --bluesky: #39ff6a;
+  /* Fortnite page palette */
+  --yellow: #39ff6a;
+  --yellow-hi: #7dff9c;
+  --sky: #39ff6a;
+  --blue: #1f9e44;
+  --deep: #0b4a1e;
+  --orange: #39ff6a;
+  --dim: #5fd47a;
+  --faint: #4fae66;
+  color-scheme: dark;
+}
+
+html.matrix-mode body {
+  background: #000 !important;
+  color: #c8ffd4;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+}
+
+html.matrix-mode .bg-glow,
+html.matrix-mode .bg-noise,
+html.matrix-mode .fn-glow { display: none; }
+
+html.matrix-mode main,
+html.matrix-mode .page { position: relative; z-index: 1; }
+
+/* every heading becomes solid phosphor green */
+html.matrix-mode h1,
+html.matrix-mode h2,
+html.matrix-mode h3,
+html.matrix-mode .section__title,
+html.matrix-mode .panel__heading,
+html.matrix-mode .cal-title,
+html.matrix-mode .adm-title,
+html.matrix-mode .hero__title,
+html.matrix-mode .hero__title span,
+html.matrix-mode .title,
+html.matrix-mode .not-found__code {
+  background: none !important;
+  -webkit-text-fill-color: #39ff6a;
+  color: #39ff6a !important;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  text-shadow: 0 0 12px rgba(57, 255, 106, 0.75) !important;
+}
+
+html.matrix-mode a { color: #9dffb3; }
+html.matrix-mode a:hover { color: #fff; }
+
+/* surfaces: dark, green-outlined, square */
+html.matrix-mode .panel,
+html.matrix-mode .linkcard,
+html.matrix-mode .dropcard,
+html.matrix-mode .project-card,
+html.matrix-mode .shopcard,
+html.matrix-mode .status-card,
+html.matrix-mode .fn-promo,
+html.matrix-mode .code-card,
+html.matrix-mode .stats-card,
+html.matrix-mode .item,
+html.matrix-mode .stat,
+html.matrix-mode .st-card,
+html.matrix-mode .st-filters,
+html.matrix-mode .cal-cell,
+html.matrix-mode .cal-row,
+html.matrix-mode .cal-detail,
+html.matrix-mode .subscribe,
+html.matrix-mode .hub-tabs__inner,
+html.matrix-mode .challenge,
+html.matrix-mode .map,
+html.matrix-mode .ghost-btn,
+html.matrix-mode .ghost,
+html.matrix-mode .tab,
+html.matrix-mode .st-chip {
+  background: rgba(0, 8, 2, 0.85) !important;
+  border-color: rgba(57, 255, 106, 0.35) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #c8ffd4;
+}
+
+html.matrix-mode .linkcard:hover,
+html.matrix-mode .dropcard:hover,
+html.matrix-mode .project-card:hover,
+html.matrix-mode .shopcard:hover { background: rgba(57, 255, 106, 0.12) !important; }
+
+/* buttons: solid green with black text */
+html.matrix-mode .btn,
+html.matrix-mode .btn-primary,
+html.matrix-mode .discord-fab,
+html.matrix-mode .fab,
+html.matrix-mode .fn-promo__btn,
+html.matrix-mode .tab.is-on,
+html.matrix-mode .hub-tab.is-on,
+html.matrix-mode .st-chip.is-on {
+  background: #39ff6a !important;
+  border-color: #39ff6a !important;
+  color: #001a06 !important;
+  -webkit-text-fill-color: #001a06;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+  border-radius: 0 !important;
+}
+
+/* pictures go green like an old monitor */
+html.matrix-mode img:not(.egg__video) {
+  filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(3) brightness(0.9);
+}
+
+html.matrix-mode .linkcard__icon,
+html.matrix-mode .dropcard__media-icon,
+html.matrix-mode .project-card__icon,
+html.matrix-mode svg { color: #39ff6a; }
+
+html.matrix-mode ::selection { background: #39ff6a; color: #000; }
+
+@media (prefers-reduced-motion: reduce) {
+  .egg { animation: none; }
+}
