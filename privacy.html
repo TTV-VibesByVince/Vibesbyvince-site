@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/matrix.css">
 </head>
 <body>
 
@@ -21,15 +22,17 @@
   <a class="ghost-btn back-link" href="/">&larr; back to vibesbyvince.com</a>
 
   <section class="panel prose" aria-labelledby="privacy-heading">
-    <h1 id="privacy-heading" class="panel__heading">Privacy</h1>
+    <h1 data-egg-tap id="privacy-heading" class="panel__heading">Privacy</h1>
     <p class="prose__updated">Last updated: October 18, 2026</p>
 
     <p>Short version: this site doesn't use cookies, doesn't have accounts or sign-ups, and doesn't
       track you. Here's everything that happens when you visit.</p>
 
     <h2>What this site collects</h2>
-    <p>Nothing that's kept. There are no sign-ups, comments or cookies. The only thing saved in your
-      browser is the stream teams page remembering your last filter (see below). If you email me through the "business inquiries" button, I only get what
+    <p>Nothing that's kept. There are no sign-ups, comments or cookies. The only things saved in your
+      browser are the stream teams page remembering your last filter (see below) and, if you find
+      the site's secret, whether Matrix mode is on for the rest of your visit. Neither ever leaves
+      your device. If you email me through the "business inquiries" button, I only get what
       you choose to send, and I use it only to reply.</p>
 
     <h2>Stream schedule</h2>
@@ -97,5 +100,6 @@
 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 
+<script src="/js/easter-egg.js" defer></script>
 </body>
 </html>

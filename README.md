@@ -152,6 +152,18 @@ left out.
 - Local design testing without Twitch keys: `STREAMTEAMS_SAMPLE=true` in
   `.dev.vars` (only works on localhost).
 
+## The secret (easter egg)
+
+Typing `vibes` or `matrix` anywhere (not while typing in a box), or tapping
+the homepage banner / a page's title 5 times quickly on a phone, plays
+`assets/video/vibes-matrix.mp4` full screen with sound, then offers
+**Matrix mode**: the site in green-on-black with falling code
+(`js/easter-egg.js`, `css/matrix.css`). Matrix mode lasts for the visit
+(sessionStorage) until "exit matrix mode". Esc / Skip stops the video;
+reduced-motion visitors are asked before it plays and get still code rain.
+To change the secret words, edit `WORDS` in `js/easter-egg.js`. Tap
+targets are elements with `data-egg-tap`.
+
 ## Local preview
 
 
