@@ -57,8 +57,13 @@ export default {
       return handleCalendar(request, env, url);
     }
 
+    // Videos (the easter egg): serve with Range support for iPhone Safari
+    if (url.pathname.startsWith('/assets/video/')) {
+      return handleVideo(request, env);
+    }
+
     // Fallback safety net — shouldn't normally be reached given
-    // run_worker_first is scoped to /api/*.
+    // run_worker_first is scoped to /api/* and /assets/video/*.
     return env.ASSETS.fetch(request);
   },
 };
@@ -380,6 +385,71 @@ function json(data, status, cacheControl) {
     headers: {
       'content-type': 'application/json',
       'cache-control': cacheControl,
+    },
+  });
+}
+
+// ---------- /assets/video/* with Range support ----------
+//
+// The static file server always answers with the whole file. Safari (and
+// iPhones in particular) won't play a video unless the server answers
+// "Range: bytes=…" requests with 206 Partial Content, so video files are
+// routed through here (see run_worker_first in wrangler.jsonc) and sliced.
+
+async function handleVideo(request, env) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
+  }
+
+  // fetch the whole file from the static assets (without the Range header)
+  const assetRes = await env.ASSETS.fetch(new Request(request.url, { method: 'GET' }));
+  if (!assetRes.ok) return assetRes;
+
+  const type = assetRes.headers.get('content-type') || 'video/mp4';
+  const etag = assetRes.headers.get('etag');
+  const base = {
+    'content-type': type,
+    'accept-ranges': 'bytes',
+    'cache-control': 'public, max-age=86400',
+    ...(etag ? { etag } : {}),
+  };
+
+  const range = request.headers.get('range');
+  const buf = await assetRes.arrayBuffer();
+  const size = buf.byteLength;
+
+  if (!range) {
+    return new Response(request.method === 'HEAD' ? null : buf, {
+      status: 200,
+      headers: { ...base, 'content-length': String(size) },
+    });
+  }
+
+  // single range only: bytes=start-end, bytes=start-, bytes=-suffix
+  const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+  let start;
+  let end;
+  if (m && (m[1] || m[2])) {
+    if (m[1] === '') {
+      const suffix = Math.min(size, parseInt(m[2], 10));
+      start = size - suffix;
+      end = size - 1;
+    } else {
+      start = parseInt(m[1], 10);
+      end = m[2] === '' ? size - 1 : Math.min(parseInt(m[2], 10), size - 1);
+    }
+  }
+  if (start === undefined || start > end || start >= size) {
+    return new Response(null, { status: 416, headers: { ...base, 'content-range': `bytes */${size}` } });
+  }
+
+  const part = new Uint8Array(buf, start, end - start + 1);
+  return new Response(request.method === 'HEAD' ? null : part, {
+    status: 206,
+    headers: {
+      ...base,
+      'content-range': `bytes ${start}-${end}/${size}`,
+      'content-length': String(part.byteLength),
     },
   });
 }
