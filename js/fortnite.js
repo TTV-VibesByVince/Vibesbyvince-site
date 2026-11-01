@@ -406,6 +406,71 @@ const CHALLENGES = [
   ['squad', 'Squads', 'Whoever gets the first elimination picks everyone\'s loadout'],
   ['squad', 'Squads', 'Land at four different spots and regroup'],
   ['squad', 'Squads', 'Only the squad leader can open chests'],
+
+  // --- added Oct 2026 (Vince's picks) ---
+  // Loadout and weapons
+  ['any', 'Loadout', 'Only weapons with blue rarity or higher: no gray, no green'],
+  ['any', 'Loadout', 'Sniper or bust: you must carry a sniper all game'],
+  ['any', 'Loadout', 'Every chest you open, swap your weapon for what\'s inside'],
+  ['any', 'Loadout', 'One weapon only: no swapping slots, ever'],
+  ['any', 'Loadout', 'Shotgun only, and only from the floor'],
+  ['any', 'Loadout', 'Every time you get an elim, drop your weapon and use theirs'],
+  ['any', 'Loadout', 'Close range only: no shooting anyone more than a few steps away'],
+  ['any', 'Loadout', 'Carry at least two healing items at all times, even if it means dropping a weapon'],
+  ['any', 'Loadout', 'Rainbow loadout: every slot a different rarity'],
+  ['any', 'Loadout', 'No reloading: when a weapon is empty, drop it'],
+  ['any', 'Loadout', 'Only weapons found on the ground floor of buildings'],
+  ['any', 'Loadout', 'Melee and pickaxe elims only until the first storm closes'],
+  ['squad', 'Squads', 'Swap loadouts with your teammate every time the storm moves'],
+  // Movement and map
+  ['any', 'Movement', 'Never stand still: keep moving or crouch-walk the whole game'],
+  ['any', 'Movement', 'Stay on the ground: no jumping unless you\'re falling'],
+  ['any', 'Movement', 'Only travel on foot: no vehicles, launch items or zip lines'],
+  ['any', 'Landing', 'Land at the farthest point from the bus path'],
+  ['any', 'Movement', 'Stay on the storm\'s edge: you must be the last one in'],
+  ['any', 'Movement', 'Only go up: finish the game on the highest ground you can find'],
+  ['any', 'Movement', 'Water only: stay in or next to water until the second storm'],
+  ['any', 'Movement', 'Pick a building at the start; you can\'t leave it until the first storm closes'],
+  ['any', 'Landing', 'Follow the bus: land exactly halfway along its path'],
+  ['any', 'Movement', 'After every elim, move to a new spot before looting'],
+  // Healing and survival
+  ['any', 'Healing', 'No healing at all: shields only'],
+  ['any', 'Healing', 'Shields only from the ground, never from chests'],
+  ['any', 'Healing', 'Only heal from fish, foraged items or anything natural'],
+  ['any', 'Healing', 'One heal per storm phase'],
+  ['any', 'Healing', 'Below 50 health? Find cover and emote before doing anything else'],
+  ['squad', 'Squads', 'Heal your teammates before yourself, always'],
+  ['any', 'Healing', 'No shield potions: minis only'],
+  // Chaos
+  ['any', 'Chaos', 'Wear the worst skin you own'],
+  ['any', 'Chaos', 'Only crouch while fighting'],
+  // Solo
+  ['solo', 'Solo', 'First 3 minutes: no picking up weapons'],
+  ['solo', 'Solo', 'Win without opening a single chest'],
+  // Squads and duos
+  ['squad', 'Squads', 'Only one person can loot; the others get what they\'re given'],
+  ['squad', 'Squads', 'The squad leader picks everyone\'s drop spot separately'],
+  ['squad', 'Squads', 'One person is the medic and carries all the heals'],
+  ['squad', 'Squads', 'One person is the VIP; everyone protects them'],
+  // Community customs (whole-lobby rules, kept under the existing filters)
+  ['any', 'Landing', 'Whole lobby lands at the same named location. Last one standing wins'],
+  ['any', 'Chaos', 'Peace treaty: no shooting until the second storm closes. Loot up, then it\'s on'],
+  ['any', 'Chaos', 'Fashion show: everyone lines up in their best skin, a winner is picked, then it\'s a free-for-all'],
+  ['any', 'Loadout', 'Pickaxe royale: pickaxes only until the final circle, then anything goes'],
+  ['any', 'Movement', 'Floor is lava: no standing on the ground after the first storm'],
+  ['any', 'Loadout', 'Sniper standoff: snipers only, and everyone stays on high ground'],
+  ['any', 'Loadout', 'Same loadout for everyone: one shotgun, one AR and heals only'],
+  ['any', 'Healing', 'No-heal lobby: nobody can heal or shield all game'],
+  ['any', 'Landing', 'Bus-path showdown: everyone lands at the very first spot the bus passes over'],
+  ['any', 'Loot', 'Floor loot only: no chests, supply drops or vending machines'],
+  // round 2 picks
+  ['any', 'Loadout', 'Rarity ladder: start with gray only, and every storm upgrade each weapon by one rarity'],
+  ['any', 'Loadout', 'Matching set: every weapon you carry must be the same rarity'],
+  ['any', 'Loadout', 'Gold rush: no fighting until you\'re holding a gold weapon'],
+  ['any', 'Loadout', 'One of each: one AR, one shotgun, one SMG, one sniper and one heal. No doubles'],
+  ['any', 'Loadout', 'Ammo miser: never pick up ammo. When a gun runs dry, find another one'],
+  ['any', 'Chaos', 'Theme night: skin, pickaxe and glider all in one colour'],
+  ['solo', 'Solo', 'Underdog: nothing purple or above until you\'re in the top 10'],
 ];
 
 const chalState = { filter: 'any', last: -1 };
