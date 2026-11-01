@@ -463,6 +463,14 @@ const CHALLENGES = [
   ['any', 'Healing', 'No-heal lobby: nobody can heal or shield all game'],
   ['any', 'Landing', 'Bus-path showdown: everyone lands at the very first spot the bus passes over'],
   ['any', 'Loot', 'Floor loot only: no chests, supply drops or vending machines'],
+  // round 2 picks
+  ['any', 'Loadout', 'Rarity ladder: start with gray only, and every storm upgrade each weapon by one rarity'],
+  ['any', 'Loadout', 'Matching set: every weapon you carry must be the same rarity'],
+  ['any', 'Loadout', 'Gold rush: no fighting until you\'re holding a gold weapon'],
+  ['any', 'Loadout', 'One of each: one AR, one shotgun, one SMG, one sniper and one heal. No doubles'],
+  ['any', 'Loadout', 'Ammo miser: never pick up ammo. When a gun runs dry, find another one'],
+  ['any', 'Chaos', 'Theme night: skin, pickaxe and glider all in one colour'],
+  ['solo', 'Solo', 'Underdog: nothing purple or above until you\'re in the top 10'],
 ];
 
 const chalState = { filter: 'any', last: -1 };
