@@ -640,7 +640,7 @@ async function adminRoute(request, env, url, d, admin) {
     if (b.outfitWinner !== undefined) {
       const w = clean(b.outfitWinner, 40) || null;
       await setSetting(d, 'vibesmas_outfit', w);
-      changes.push(w ? `set the outfit winner to ${w}` : 'cleared the outfit winner');
+      changes.push(w ? `set the sweater contest winner to ${w}` : 'cleared the sweater contest winner');
     }
     for (const c of changes) await log(d, actor, c);
     await purgePublic();
