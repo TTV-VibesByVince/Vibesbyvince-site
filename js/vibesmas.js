@@ -72,6 +72,16 @@
       cta.href = '/vibesmas/leaderboard';
     }
 
+    if (s.phase === 'live') {
+      const cta = $('signup-cta');
+      cta.textContent = 'Watch live';
+      cta.href = '/vibesmas/watch';
+    } else if (s.phase === 'final' || s.phase === 'review') {
+      const cta = $('signup-cta');
+      cta.textContent = s.phase === 'final' ? 'See the results' : 'Results (under review)';
+      cta.href = s.phase === 'final' ? '/vibesmas/2026' : '/vibesmas/leaderboard';
+    }
+
     if (s.outfitWinner) {
       const p = $('outfit-text');
       p.textContent = 'Winner: ';

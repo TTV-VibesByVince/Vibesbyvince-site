@@ -33,7 +33,10 @@
 
   <nav class="vm-nav" aria-label="Tournament">
     <a class="vm-pillbtn" href="/vibesmas">&larr; Vibesmas Tournament</a>
-    <span class="vm-meta" id="spots">Registration closes Dec 5, 11:59 PM MST</span>
+    <div class="vm-row" style="gap:4px">
+      <span class="vm-meta" id="spots">Registration closes Dec 5, 11:59 PM MST</span>
+      <button class="vm-snow-btn" type="button" data-snow-toggle hidden>Let it snow</button>
+    </div>
   </nav>
 
   <header style="display:flex;flex-direction:column;gap:10px">
@@ -54,6 +57,31 @@
         <p id="st-text"></p>
         <p class="vm-note" id="st-note" hidden></p>
         <dl class="vm-dl" id="st-details"></dl>
+
+        <div class="vm-panel-sub" id="st-checkin" hidden>
+          <h3 class="vm-h3" style="margin:0">Game-day check-in</h3>
+          <p id="ci-text"></p>
+          <div class="vm-row">
+            <button class="vm-btn vm-btn--cane" type="button" id="ci-btn" hidden>Check in now</button>
+            <button class="vm-linkbtn" type="button" id="ci-undo" hidden>Undo check-in</button>
+          </div>
+        </div>
+
+        <div class="vm-panel-sub" id="st-share" hidden>
+          <h3 class="vm-h3" style="margin:0">Tell everyone you're in</h3>
+          <p>A ready-made image for X, TikTok, Instagram or Discord.</p>
+          <img class="vm-share-img" id="share-preview" alt="Your duo's Vibesmas announcement image" hidden>
+          <div class="vm-row">
+            <button class="vm-btn vm-btn--small" type="button" id="share-square">Download square</button>
+            <button class="vm-btn vm-btn--ghost vm-btn--small" type="button" id="share-wide">Download wide</button>
+          </div>
+        </div>
+
+        <div class="vm-panel-sub" id="st-cal" hidden>
+          <p class="vm-cal" style="margin:0">Add to calendar:
+          <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=Vibesmas%20Tournament%20%28check%20in%20by%209%3A45%20AM%20MST%29&amp;dates=20261212T164500Z/20261212T200000Z&amp;details=Fortnite%20Zero%20Build%20duos.%20Check%20in%20on%20Discord%20by%209%3A45%20AM%20MST%2C%20game%201%20starts%20at%2010%3A00%20AM%20MST.%20https%3A//vibesbyvince.com/vibesmas&amp;location=https%3A//vibesbyvince.com/vibesmas" target="_blank" rel="noopener">Google</a>
+          <a href="/vibesmas/vibesmas-2026.ics" download>Apple / Outlook</a></p>
+        </div>
         <div>
           <p style="margin:0 0 8px">Your private status link. Save it to check back or make changes:</p>
           <div class="vm-link-row">
@@ -124,7 +152,7 @@
         <fieldset class="vm-box">
           <legend>We confirm that</legend>
           <label class="vm-check"><input type="checkbox" name="age21"><span>Both players are 21 or older.</span></label>
-          <label class="vm-check"><input type="checkbox" name="streamVod"><span>At least one of us will stream the tournament live on Twitch, and our VODs will stay up.</span></label>
+          <label class="vm-check"><input type="checkbox" name="streamVod"><span>At least one of us will stream the tournament live on Twitch, our VODs will stay up, and VibesByVince may use our tournament VODs and clips as content.</span></label>
           <label class="vm-check"><input type="checkbox" name="rules"><span>We've read the <a href="/vibesmas#rules" target="_blank" rel="noopener">rules and point system</a> and joined the <a href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener">Discord</a>.</span></label>
         </fieldset>
 
@@ -157,6 +185,7 @@
 </main>
 
 <script src="/js/vibesmas-signup.js"></script>
+<script src="/js/vibesmas-snow.js" defer></script>
 <script src="/js/easter-egg.js" defer></script>
 </body>
 </html>

@@ -22,9 +22,25 @@ Fortnite Zero Build duos tournament on Saturday, December 12, 2026.
 - `/vibesmas/leaderboard`: live standings (refreshes every 30 s). Only
   games published in the admin count. Points: 1st 10, 2nd 8, 3rd 6, 4th 4,
   5th 2, +1 per duo kill; ties go to total kills.
+- `/vibesmas/watch`: every streamer from the approved duos, live ones
+  first (`/api/vibesmas/live`, cached 60 s). "Watch here" loads up to 4
+  Twitch players side by side; nothing from Twitch loads until then.
+- `/vibesmas/2026`: hall of fame. Shows champions, highlights (most kills,
+  best single game), the sweater winner and final standings once the
+  status is "review" (marked provisional) or "final".
+- Status page extras for approved duos: game-day check-in (7:00 to
+  11:00 AM MST, `checkinOpen` / `checkinClose` in `TOURNAMENT`), a
+  "We're in" share image drawn in the browser (square and wide), and
+  calendar links (`vibesmas/vibesmas-2026.ics`).
+- Homepage card (`#vm-promo` in `index.html`, `updateVibesmasPromo` in
+  `js/main.js`): countdown, then "Watch live", then "Results"; hides
+  itself after January 15, 2027.
+- "Let it snow" toggle on the public Vibesmas pages (`js/vibesmas-snow.js`),
+  off by default and hidden for reduced motion.
 - `/vibesmas/overlay`: OBS browser source (1920×1080, transparent).
   `?rows=5` sets how many duos show (3–10), `&side=left` moves the panel.
 - `/vibesmas/admin`: approve / decline (with a note the duo sees),
+  mark or undo check-ins (and filter "Not checked in"),
   enter each game's placements and kills, publish games, set the status
   (before / live / 24-hour review / final), the game in progress and the
   ugly Christmas sweater contest winner. Activity log on the side.

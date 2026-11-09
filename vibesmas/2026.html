@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibesmas 2026 results · VibesByVince</title>
+<meta name="description" content="Champions, final standings and highlights from the Vibesmas Tournament 2026.">
+<meta name="theme-color" content="#08050d">
+<link rel="canonical" href="https://vibesbyvince.com/vibesmas/2026">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vibesmas.css">
+<link rel="stylesheet" href="/css/matrix.css">
+
+<meta property="og:title" content="Vibesmas 2026: the results">
+<meta property="og:description" content="Champions, final standings and highlights from the Vibesmas Tournament.">
+<meta property="og:image" content="https://vibesbyvince.com/assets/video/vibesmas-poster.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/vibesmas/2026">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="vm-body">
+
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="vm-page">
+
+  <nav class="vm-nav" aria-label="Tournament">
+    <a class="vm-pillbtn" href="/vibesmas">&larr; Vibesmas Tournament</a>
+    <div class="vm-nav__links">
+      <a href="/vibesmas/leaderboard">Leaderboard</a>
+      <button class="vm-snow-btn" type="button" data-snow-toggle hidden>Let it snow</button>
+    </div>
+  </nav>
+
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <h1 data-egg-tap class="vm-h1">Vibesmas 2026</h1>
+    <p class="vm-intro" id="intro">Saturday, December 12, 2026 · Fortnite Zero Build duos · 5 games</p>
+    <div class="vm-cane vm-cane--short" aria-hidden="true" style="margin-top:6px"></div>
+  </header>
+
+  <section class="vm-status" id="waiting" hidden>
+    <h2 class="vm-status__h" id="waiting-title">Results go up here after the tournament</h2>
+    <p id="waiting-text">Follow the standings live on the leaderboard while it's on.</p>
+    <div class="vm-row"><a class="vm-btn" href="/vibesmas/leaderboard">Live leaderboard</a></div>
+  </section>
+
+  <div id="results" hidden style="display:flex;flex-direction:column;gap:56px">
+    <section class="vm-section" aria-labelledby="champs-h">
+      <h2 id="champs-h" class="vm-h2" style="font-size:clamp(34px,5vw,52px)">Champions</h2>
+      <p class="vm-small" id="provisional" hidden></p>
+      <div class="vm-champ" id="champ"></div>
+      <ol class="vm-podium" id="runners" aria-label="Second and third place"></ol>
+    </section>
+
+    <section class="vm-two">
+      <div class="vm-col">
+        <h2 class="vm-h2">Highlights</h2>
+        <dl class="vm-dl" id="mvp"></dl>
+      </div>
+      <div class="vm-col" id="sweater-col">
+        <h2 class="vm-h2">Ugliest sweater</h2>
+        <div class="vm-prize-outfit" style="flex:none">
+          <svg aria-hidden="true" width="60" height="56" viewBox="0 0 60 56" style="flex:none">
+            <path d="M22 4h16l4 4 12 6 5 22-9 3-3-12v29H13V27l-3 12-9-3 5-22 12-6z" fill="#e8364f"/>
+            <path d="M22 4h16l-2 5h-12z" fill="#2fa866"/>
+            <rect x="13" y="47" width="34" height="6" fill="#2fa866"/>
+            <path d="M1 36l9 3 1-4-9-3zM59 36l-9 3-1-4 9-3z" fill="#2fa866"/>
+            <path d="M13 22l4 4 4-4 4 4 4-4 4 4 4-4 4 4 4-4 4 4" fill="none" stroke="#fbf4f6" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M30 29l6 10h-4l5 6H23l5-6h-4z" fill="#2fa866"/>
+            <circle cx="30" cy="28" r="2" fill="#f5c451"/>
+          </svg>
+          <div><span>$100 winner</span><b id="sweater" style="font-size:34px">To be announced</b><p>Voted by the community in Discord.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="vm-section" aria-labelledby="final-h">
+      <h2 id="final-h" class="vm-h2">Final standings</h2>
+      <div class="vm-tablewrap">
+        <table class="vm-table" style="min-width:560px">
+          <thead><tr><th scope="col">#</th><th scope="col">Duo</th><th scope="col" class="num">Kills</th><th scope="col" class="num">Points</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="vm-intro">Thank you to every duo who played and everyone who tuned in. See you at Vibesmas 2027.</p>
+  </div>
+
+  <footer class="vm-footer">
+    <span>Questions? Ask in the <a href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener">VibesByVince Discord</a>.</span>
+    <span>&copy; <span id="year">2026</span> vibesbyvince &middot; <a href="/privacy">privacy</a></span>
+  </footer>
+</main>
+
+<script src="/js/vibesmas-results.js"></script>
+<script src="/js/vibesmas-snow.js" defer></script>
+<script src="/js/easter-egg.js" defer></script>
+</body>
+</html>
