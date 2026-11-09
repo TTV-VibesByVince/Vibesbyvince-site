@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch live · Vibesmas Tournament · VibesByVince</title>
+<meta name="description" content="Every streamer in the Vibesmas Tournament in one place. See who's live and watch up to four POVs side by side.">
+<meta name="theme-color" content="#08050d">
+<link rel="canonical" href="https://vibesbyvince.com/vibesmas/watch">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vibesmas.css">
+<link rel="stylesheet" href="/css/matrix.css">
+
+<meta property="og:title" content="Watch the Vibesmas Tournament live">
+<meta property="og:description" content="Every streamer in the tournament in one place. Watch up to four POVs side by side.">
+<meta property="og:image" content="https://vibesbyvince.com/assets/video/vibesmas-poster.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/vibesmas/watch">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="vm-body">
+
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="vm-page vm-page--tight">
+
+  <nav class="vm-nav" aria-label="Tournament">
+    <a class="vm-pillbtn" href="/vibesmas">&larr; Vibesmas Tournament</a>
+    <div class="vm-nav__links">
+      <a href="/vibesmas/leaderboard">Leaderboard</a>
+      <button class="vm-snow-btn" type="button" data-snow-toggle hidden>Let it snow</button>
+    </div>
+  </nav>
+
+  <header class="vm-board-head">
+    <div>
+      <h1 data-egg-tap class="vm-h1">Watch live</h1>
+      <div class="vm-cane vm-cane--short" aria-hidden="true"></div>
+    </div>
+    <p class="vm-meta" id="live-count" aria-live="polite">Loading&hellip;</p>
+  </header>
+
+  <section class="vm-stage" id="stage" aria-label="Streams you're watching" hidden>
+    <div class="vm-stage__grid" id="stage-grid"></div>
+    <p class="vm-small">Watching up to 4 at once. Pick another stream to add it; the oldest one is swapped out.
+      <button class="vm-linkbtn" type="button" id="stage-clear">Close all</button></p>
+  </section>
+
+  <p class="vm-small" id="intro" style="max-width:70ch">Every streamer in the tournament, live ones first. Press <b>Watch here</b>
+    to open a stream on this page (up to 4 side by side). The Twitch player only loads when you choose a stream.</p>
+
+  <div class="vm-watch-grid" id="grid"></div>
+  <p class="vm-empty" id="empty" hidden></p>
+
+  <footer class="vm-footer">
+    <span>Vibesmas Tournament · Saturday, December 12, 2026</span>
+    <span>&copy; <span id="year">2026</span> vibesbyvince &middot; <a href="/privacy">privacy</a></span>
+  </footer>
+</main>
+
+<script src="/js/vibesmas-watch.js"></script>
+<script src="/js/vibesmas-snow.js" defer></script>
+<script src="/js/easter-egg.js" defer></script>
+</body>
+</html>

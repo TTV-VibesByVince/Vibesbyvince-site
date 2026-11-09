@@ -211,3 +211,49 @@ async function updateProjects() {
 }
 
 updateProjects();
+
+// ---------- Vibesmas Tournament card ----------
+// Counts down to the tournament, switches to "watch" on the day and to
+// "results" afterwards, and hides itself in mid-January.
+
+async function updateVibesmasPromo() {
+  const card = document.getElementById('vm-promo');
+  if (!card) return;
+  const start = Date.parse('2026-12-12T17:00:00Z');
+  const now = Date.now();
+  if (now > Date.parse('2027-01-15T00:00:00Z')) {
+    card.hidden = true;
+    return;
+  }
+  const when = document.getElementById('vm-promo-when');
+  const btn = document.getElementById('vm-promo-btn');
+  const left = start - now;
+  if (left > 86400000) {
+    const days = Math.ceil(left / 86400000);
+    when.textContent = `${days} days to go`;
+  } else if (left > 0) {
+    when.textContent = 'Less than a day to go · check in by 9:45 AM MST';
+  }
+
+  try {
+    const res = await fetch('/api/vibesmas');
+    if (!res.ok) return;
+    const s = await res.json();
+    if (s.phase === 'live') {
+      when.textContent = 'Live now';
+      btn.textContent = 'Watch live →';
+      card.href = '/vibesmas/watch';
+    } else if (s.phase === 'review' || s.phase === 'final') {
+      const champ = s.standings && s.standings[0];
+      when.textContent = s.phase === 'final' && champ ? `Champions: ${champ.name}` : 'Results under review';
+      btn.textContent = 'Results →';
+      card.href = s.phase === 'final' ? '/vibesmas/2026' : '/vibesmas/leaderboard';
+    } else if (s.regOpen) {
+      when.textContent += `${when.textContent ? ' · ' : ''}${s.approved} of ${s.maxDuos} duos in`;
+    } else {
+      btn.textContent = 'Details →';
+    }
+  } catch {}
+}
+
+updateVibesmasPromo();

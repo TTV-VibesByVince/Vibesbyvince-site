@@ -32,7 +32,10 @@
 
   <nav class="vm-nav" aria-label="Tournament">
     <a class="vm-pillbtn" href="/vibesmas">&larr; Vibesmas Tournament</a>
-    <span class="vm-meta" id="updated" aria-live="polite">Loading&hellip;</span>
+    <div class="vm-row" style="gap:4px">
+      <span class="vm-meta" id="updated" aria-live="polite">Loading&hellip;</span>
+      <button class="vm-snow-btn" type="button" data-snow-toggle hidden>Let it snow</button>
+    </div>
   </nav>
 
   <header class="vm-board-head">
@@ -44,6 +47,7 @@
   </header>
 
   <ol class="vm-podium" id="podium" aria-label="Top three" hidden></ol>
+  <dl class="vm-mvp" id="mvp" hidden></dl>
 
   <div class="vm-tabs" role="tablist" aria-label="Scores view" id="tabs"></div>
 
@@ -66,6 +70,7 @@
 </main>
 
 <script src="/js/vibesmas-leaderboard.js"></script>
+<script src="/js/vibesmas-snow.js" defer></script>
 <script src="/js/easter-egg.js" defer></script>
 </body>
 </html>

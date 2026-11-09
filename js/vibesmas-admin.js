@@ -131,7 +131,7 @@
       try {
         await api('duo', { id: d.id, action, note });
         flash(
-          { approve: `${d.name} approved.`, decline: `${d.name} declined.`, pending: `${d.name} moved back to waiting.`, delete: `${d.name} removed.` }[action],
+          { approve: `${d.name} approved.`, decline: `${d.name} declined.`, pending: `${d.name} moved back to waiting.`, delete: `${d.name} removed.`, checkin: `${d.name} checked in.`, uncheckin: `${d.name}'s check-in undone.` }[action],
         );
         await load();
       } catch (err) {
@@ -165,6 +165,10 @@
       no.addEventListener('click', () => act(d, 'decline', note.value)());
       row.append(ok, no, note);
     } else {
+      const ci = el('button', d.checkedInAt ? 'vm-linkbtn' : 'vm-btn vm-btn--ghost vm-btn--small', d.checkedInAt ? 'Undo check-in' : 'Mark checked in');
+      ci.type = 'button';
+      ci.addEventListener('click', act(d, d.checkedInAt ? 'uncheckin' : 'checkin'));
+      row.append(el('span', d.checkedInAt ? 'vm-ok' : 'vm-small', d.checkedInAt ? `Checked in ${when(d.checkedInAt)}` : 'Not checked in'), ci);
       const back = el('button', 'vm-linkbtn', 'Move back to waiting');
       back.type = 'button';
       back.addEventListener('click', act(d, 'pending'));
@@ -195,14 +199,17 @@
   function renderDuos() {
     const list = $('duo-list');
     list.textContent = '';
-    const shown = S.duos.filter((d) => filter === 'all' || d.status === filter);
+    const shown = S.duos.filter((d) =>
+      filter === 'all' ? true : filter === 'notin' ? d.status === 'approved' && !d.checkedInAt : d.status === filter,
+    );
     shown.forEach((d) => list.append(duoCard(d)));
     const empty = $('duo-empty');
     empty.hidden = shown.length > 0;
-    empty.textContent = { pending: 'Nobody is waiting. All caught up.', approved: 'No approved duos yet.', declined: 'No declined duos.', all: 'No sign-ups yet.' }[filter];
+    empty.textContent = { pending: 'Nobody is waiting. All caught up.', approved: 'No approved duos yet.', declined: 'No declined duos.', notin: 'Every approved duo is checked in.', all: 'No sign-ups yet.' }[filter];
 
     const n = (s) => S.duos.filter((d) => d.status === s).length;
-    $('counts').textContent = `${n('pending')} waiting · ${n('approved')} of ${S.maxDuos} approved · ${S.regOpen ? 'sign-ups close Dec 5, 11:59 PM MST' : 'sign-ups closed'}`;
+    const checked = S.duos.filter((d) => d.status === 'approved' && d.checkedInAt).length;
+    $('counts').textContent = `${n('pending')} waiting · ${n('approved')} of ${S.maxDuos} approved · ${checked} of ${n('approved')} checked in · ${S.regOpen ? 'sign-ups close Dec 5, 11:59 PM MST' : 'sign-ups closed'}`;
     $('tab-approvals').textContent = n('pending') ? `Approvals (${n('pending')})` : 'Approvals';
   }
 

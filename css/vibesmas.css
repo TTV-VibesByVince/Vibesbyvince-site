@@ -259,6 +259,11 @@
 .vm-dl dt { font-size: 13px; color: var(--vm-dim); }
 .vm-dl dd { margin: 0; font-size: 15px; }
 
+.vm-panel-sub { padding: 18px 20px; border-radius: 14px; background: var(--vm-panel-2); display: flex; flex-direction: column; gap: 10px; }
+.vm-share-img { width: 100%; max-width: 420px; border-radius: 12px; display: block; }
+.vm-cal { margin: 0; font-size: 14px; color: var(--vm-dim); display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.vm-cal a { display: inline-flex; align-items: center; min-height: 32px; font-weight: 600; }
+
 /* ---------- leaderboard ---------- */
 
 .vm-board-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; }
@@ -360,3 +365,67 @@
   .vm-prize-main__first b { font-size: 64px; }
   .vm-shots { padding: 22px; }
 }
+
+/* ---------- watch live ---------- */
+
+.vm-stage { display: flex; flex-direction: column; gap: 10px; }
+.vm-stage__grid { display: grid; gap: 10px; grid-template-columns: 1fr; }
+.vm-stage__grid[data-count="2"],
+.vm-stage__grid[data-count="3"],
+.vm-stage__grid[data-count="4"] { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.vm-stage__item { position: relative; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; }
+.vm-stage__item iframe { width: 100%; height: 100%; border: 0; display: block; }
+.vm-stage__close {
+  position: absolute; top: 8px; right: 8px; width: 36px; height: 36px; border-radius: 50%;
+  border: 0; background: rgba(8, 5, 13, 0.8); color: #fff; cursor: pointer;
+  display: grid; place-items: center;
+}
+.vm-stage__close:hover { background: var(--xm-red); }
+
+.vm-watch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.vm-watch { border-radius: 18px; background: var(--vm-panel); border: 1px solid var(--vm-line); overflow: hidden; display: flex; flex-direction: column; }
+.vm-watch.is-live { border-color: rgba(232, 54, 79, 0.45); }
+.vm-watch__media { position: relative; aspect-ratio: 16 / 9; background: #0d0816; display: grid; place-items: center; }
+.vm-watch__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vm-watch__badge {
+  position: absolute; left: 10px; top: 10px; padding: 4px 10px; border-radius: 8px;
+  background: var(--xm-red); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+}
+.vm-watch__off { color: var(--vm-dim); font-size: 14px; }
+.vm-watch__body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.vm-watch__who { display: flex; align-items: center; gap: 12px; }
+.vm-watch__who div { display: flex; flex-direction: column; min-width: 0; }
+.vm-watch__who span { font-size: 13px; color: var(--vm-dim); }
+.vm-watch__avatar { width: 40px; height: 40px; border-radius: 50%; flex: none; }
+.vm-watch__title { margin: 0; font-size: 14px; color: var(--vm-soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ---------- results / hall of fame ---------- */
+
+.vm-champ {
+  padding: 32px; border-radius: 24px; background: var(--vm-panel-2);
+  border: 1px solid rgba(245, 196, 81, 0.5);
+  box-shadow: 0 18px 50px rgba(245, 196, 81, 0.08);
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px;
+}
+.vm-champ__who { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.vm-champ__who b { font-family: 'Rajdhani', sans-serif; font-size: clamp(44px, 7vw, 80px); line-height: 0.95; text-transform: uppercase; overflow-wrap: anywhere; }
+.vm-champ__players { color: var(--vm-soft); font-size: 17px; }
+.vm-champ__pts { display: flex; flex-direction: column; align-items: flex-end; }
+.vm-champ__pts b { font-family: 'Rajdhani', sans-serif; font-size: 72px; line-height: 0.9; font-variant-numeric: tabular-nums; }
+.vm-champ__pts span { color: var(--vm-dim); font-size: 14px; }
+
+/* ---------- MVP strip (leaderboard) ---------- */
+
+.vm-mvp { margin: 0; display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: 14px; color: var(--vm-dim); }
+.vm-mvp div { display: flex; gap: 8px; align-items: baseline; }
+.vm-mvp dt { color: var(--xm-gold); font-weight: 700; }
+.vm-mvp dd { margin: 0; color: var(--vm-soft); }
+
+/* ---------- let it snow ---------- */
+
+.vm-snow-btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px;
+  border: 0; background: transparent; color: var(--vm-dim); font: 600 14px 'Inter', sans-serif; cursor: pointer;
+}
+.vm-snow-btn:hover, .vm-snow-btn[aria-pressed="true"] { color: #fff; }
+.vm-snow { position: fixed; inset: 0; z-index: 0; pointer-events: none; }

@@ -19,12 +19,16 @@
 
 import { db, requireAdmin, getSetting, setSetting, json } from './calendar.js';
 import { appConfigured, appHelix } from './twitch-app.js';
+import { proxied } from './streamteams.js';
 
 export const TOURNAMENT = {
   start: '2026-12-12T17:00:00Z', // 9:00 AM PST / 10:00 AM MST
   regClose: '2026-12-06T06:59:59Z', // Sat Dec 5, 11:59:59 PM MST
   maxDuos: 40,
   games: 5,
+  // duos can check in on their status page from 7:00 AM MST until 11:00 AM MST
+  checkinOpen: '2026-12-12T14:00:00Z',
+  checkinClose: '2026-12-12T18:00:00Z',
 };
 const PTS = { 1: 10, 2: 8, 3: 6, 4: 4, 5: 2 };
 const PHASES = ['signups', 'live', 'review', 'final'];
@@ -72,6 +76,10 @@ async function vdb(env) {
         text TEXT NOT NULL
       )`),
     ]);
+    // columns added after launch (ALTER fails harmlessly once they exist)
+    try {
+      await d.prepare('ALTER TABLE vibesmas_duos ADD COLUMN checked_in_at TEXT').run();
+    } catch {}
     ready = true;
   }
   return d;
@@ -100,6 +108,7 @@ export async function handleVibesmas(request, env, url, ctx) {
       if (bad) return bad;
       return await signup(request, env, d, ctx);
     }
+    if (path === '/api/vibesmas/live' && method === 'GET') return await liveRoute(env, d, ctx);
     if (path === '/api/vibesmas/status') {
       if (method !== 'GET') {
         const bad = sameOrigin(request, url);
@@ -390,6 +399,7 @@ async function publicState(env, d, ctx) {
   });
   const rosterById = new Map(roster.map((r) => [r.id, r]));
   const table = standings(duos || [], scores || [], published).map((s) => ({ ...s, players: rosterById.get(s.id).players }));
+  const mvp = highlights(table);
 
   const now = Date.now();
   const body = {
@@ -403,6 +413,7 @@ async function publicState(env, d, ctx) {
     ...settings,
     published,
     standings: table,
+    mvp,
   };
   const res = json(body, 200, `public, max-age=${PUBLIC_CACHE_SECONDS}`);
   ctx && ctx.waitUntil && ctx.waitUntil(cache.put(cacheKey, res.clone()));
@@ -463,6 +474,10 @@ function ownView(r) {
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     canEdit: r.status !== 'approved' && regOpen(),
+    checkedInAt: r.checked_in_at || null,
+    checkinOpen: r.status === 'approved' && checkinOpen(),
+    checkinOpens: TOURNAMENT.checkinOpen,
+    checkinCloses: TOURNAMENT.checkinClose,
   };
 }
 
@@ -495,6 +510,17 @@ async function statusRoute(request, env, url, d, ctx) {
     return json({ duo: ownView(updated) });
   }
 
+  if (request.method === 'POST') {
+    const b = (await readJson(request)) || {};
+    if (row.status !== 'approved') return json({ error: 'not_approved' }, 409);
+    if (!checkinOpen()) return json({ error: 'checkin_closed' }, 409);
+    const at = b.checkin === false ? null : nowIso();
+    await d.prepare('UPDATE vibesmas_duos SET checked_in_at = ? WHERE id = ?').bind(at, row.id).run();
+    await log(d, 'check-in', at ? `${row.name} checked in` : `${row.name} undid their check-in`);
+    const updated = await d.prepare('SELECT * FROM vibesmas_duos WHERE id = ?').bind(row.id).first();
+    return json({ duo: ownView(updated) });
+  }
+
   if (request.method === 'DELETE') {
     if (Date.now() >= Date.parse(TOURNAMENT.start)) return json({ error: 'locked' }, 409);
     await d.batch([
@@ -522,6 +548,7 @@ function adminDuo(r) {
     p2: { epic: r.p2_epic, twitch: r.p2_twitch || '', discord: r.p2_discord || '' },
     createdAt: r.created_at,
     updatedAt: r.updated_at,
+    checkedInAt: r.checked_in_at || null,
   };
 }
 
@@ -567,6 +594,10 @@ async function adminRoute(request, env, url, d, admin) {
     } else if (action === 'pending') {
       await d.prepare("UPDATE vibesmas_duos SET status = 'pending', updated_at = ? WHERE id = ?").bind(nowIso(), id).run();
       await log(d, actor, `moved ${row.name} back to waiting`);
+    } else if (action === 'checkin' || action === 'uncheckin') {
+      const at = action === 'checkin' ? nowIso() : null;
+      await d.prepare('UPDATE vibesmas_duos SET checked_in_at = ? WHERE id = ?').bind(at, id).run();
+      await log(d, actor, at ? `checked in ${row.name}` : `undid ${row.name}'s check-in`);
     } else if (action === 'delete') {
       await d.batch([
         d.prepare('DELETE FROM vibesmas_scores WHERE duo_id = ?').bind(id),
@@ -648,4 +679,82 @@ async function adminRoute(request, env, url, d, admin) {
   }
 
   return json({ error: 'not_found' }, 404);
+}
+
+// ---------- check-in window ----------
+
+function checkinOpen(now = Date.now()) {
+  return now >= Date.parse(TOURNAMENT.checkinOpen) && now <= Date.parse(TOURNAMENT.checkinClose);
+}
+
+// ---------- MVP highlights (published games only) ----------
+
+function highlights(table) {
+  let mostKills = null;
+  let bestGame = null;
+  for (const r of table) {
+    if (r.kills > 0 && (!mostKills || r.kills > mostKills.kills)) mostKills = { id: r.id, name: r.name, kills: r.kills };
+    r.games.forEach((g, i) => {
+      if (g && g.kills > 0 && (!bestGame || g.kills > bestGame.kills)) bestGame = { id: r.id, name: r.name, game: i + 1, kills: g.kills };
+    });
+  }
+  return { mostKills, bestGame };
+}
+
+// ---------- who's live (/vibesmas/watch) ----------
+
+async function liveRoute(env, d, ctx) {
+  const cache = caches.default;
+  const cacheKey = new Request('https://vibesbyvince.com/__cache/vibesmas/live/v1');
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
+
+  const { results: duos } = await d.prepare("SELECT * FROM vibesmas_duos WHERE status = 'approved' ORDER BY created_at").all();
+  const streamers = [];
+  for (const r of duos || []) {
+    for (const p of publicPlayers(r)) {
+      if (p.streams && p.twitch) streamers.push({ duo: r.name, login: p.twitch.toLowerCase(), name: p.twitch });
+    }
+  }
+
+  const users = new Map();
+  const streams = new Map();
+  let ok = appConfigured(env);
+  if (ok && streamers.length) {
+    try {
+      for (let i = 0; i < streamers.length; i += 100) {
+        const chunk = streamers.slice(i, i + 100);
+        const q = chunk.map((s) => `login=${encodeURIComponent(s.login)}`).join('&');
+        const uq = chunk.map((s) => `user_login=${encodeURIComponent(s.login)}`).join('&');
+        const [u, st] = await Promise.all([appHelix(env, `/users?${q}`), appHelix(env, `/streams?first=100&${uq}`)]);
+        for (const x of u.data || []) users.set(x.login.toLowerCase(), x);
+        for (const x of st.data || []) streams.set(String(x.user_login).toLowerCase(), x);
+      }
+    } catch {
+      ok = false;
+    }
+  }
+
+  const minute = Math.floor(Date.now() / 60000);
+  const list = streamers.map((s) => {
+    const u = users.get(s.login);
+    const st = streams.get(s.login);
+    return {
+      duo: s.duo,
+      login: s.login,
+      name: u ? u.display_name : s.name,
+      avatar: u && u.profile_image_url ? proxied(u.profile_image_url.replace(/-\d+x\d+\./, '-70x70.')) : null,
+      live: !!st,
+      title: st ? st.title : null,
+      game: st ? st.game_name : null,
+      viewers: st ? st.viewer_count : null,
+      startedAt: st ? st.started_at : null,
+      preview: st && st.thumbnail_url ? proxied(`${st.thumbnail_url.replace('{width}', '640').replace('{height}', '360')}?m=${minute}`) : null,
+    };
+  });
+  list.sort((a, b) => Number(b.live) - Number(a.live) || (b.viewers || 0) - (a.viewers || 0) || a.name.localeCompare(b.name));
+
+  const res = json({ ok, streamers: list }, 200, 'public, max-age=60');
+  ctx && ctx.waitUntil && ctx.waitUntil(cache.put(cacheKey, res.clone()));
+  return res;
 }

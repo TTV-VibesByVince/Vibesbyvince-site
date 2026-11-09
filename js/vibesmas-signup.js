@@ -33,6 +33,8 @@
     locked: "Your duo is approved, so it's locked. Ask Vince in Discord if something needs to change.",
     bad_origin: 'That request was blocked. Reload the page and try again.',
     not_found: "That status link doesn't match a sign-up. It may have been withdrawn.",
+    not_approved: 'Only approved duos can check in.',
+    checkin_closed: 'Check-in is closed right now.',
   };
   const FIELD_FOR = {
     name_required: 'name', name_too_long: 'name', name_taken: 'name',
@@ -206,8 +208,190 @@
     $('st-edit').hidden = !d.canEdit;
     $('st-withdraw').hidden = false;
     $('st-confirm').hidden = true;
+    renderCheckin();
+    const approved = d.status === 'approved';
+    $('st-share').hidden = !approved;
+    $('st-cal').hidden = !approved;
+    if (approved) drawShare('square', true);
     if (justSaved) $('status').scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
+
+  // ---------- game-day check-in ----------
+
+  function timeMst(iso) {
+    try {
+      return new Date(iso).toLocaleTimeString('en-US', { timeZone: 'America/Phoenix', hour: 'numeric', minute: '2-digit' }) + ' MST';
+    } catch {
+      return iso;
+    }
+  }
+
+  function renderCheckin() {
+    const d = current;
+    const box = $('st-checkin');
+    box.hidden = d.status !== 'approved';
+    if (box.hidden) return;
+    const now = Date.now();
+    const opens = Date.parse(d.checkinOpens);
+    const closes = Date.parse(d.checkinCloses);
+    $('ci-btn').hidden = true;
+    $('ci-undo').hidden = true;
+    if (d.checkedInAt) {
+      $('ci-text').textContent = `Checked in at ${timeMst(d.checkedInAt)}. You're all set. Matchmaking keys go out in Discord before every game.`;
+      $('ci-undo').hidden = !d.checkinOpen;
+    } else if (now < opens) {
+      $('ci-text').textContent = `On Saturday, December 12, check in right here between ${timeMst(d.checkinOpens)} and 9:45 AM MST. Check-in on Discord still applies too.`;
+    } else if (d.checkinOpen) {
+      $('ci-text').textContent = 'Check-in is open. Press the button once both of you are ready to play.';
+      $('ci-btn').hidden = false;
+    } else if (now > closes) {
+      $('ci-text').textContent = 'Check-in is closed.';
+    }
+  }
+
+  async function setCheckin(on) {
+    try {
+      const r = await api(`/api/vibesmas/status?t=${encodeURIComponent(key)}`, { method: 'POST', body: JSON.stringify({ checkin: on }) });
+      current = r.duo;
+      renderCheckin();
+    } catch (err) {
+      $('ci-text').textContent = err.message;
+    }
+  }
+  $('ci-btn').addEventListener('click', () => setCheckin(true));
+  $('ci-undo').addEventListener('click', () => setCheckin(false));
+
+  // ---------- share image ----------
+
+  let poster = null;
+  function loadPoster() {
+    if (poster) return poster;
+    poster = new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = '/assets/video/vibesmas-poster.jpg';
+    });
+    return poster;
+  }
+
+  function fitText(ctx, text, maxWidth, size, weight, family) {
+    let s = size;
+    do {
+      ctx.font = `${weight} ${s}px ${family}`;
+      if (ctx.measureText(text).width <= maxWidth) break;
+      s -= 4;
+    } while (s > 24);
+    return s;
+  }
+
+  async function renderShare(kind) {
+    const d = current;
+    const wide = kind === 'wide';
+    const W = wide ? 1600 : 1080;
+    const H = wide ? 900 : 1080;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+    try {
+      await Promise.all([document.fonts.load('700 80px Rajdhani'), document.fonts.load('600 40px Inter')]);
+    } catch {}
+    ctx.fillStyle = '#08050d';
+    ctx.fillRect(0, 0, W, H);
+
+    // logo art: right half on wide, top half on square (cropped to fill)
+    const img = await loadPoster();
+    const box = wide ? { x: 700, y: 0, w: 900, h: 900 } : { x: 0, y: 0, w: 1080, h: 520 };
+    if (img) {
+      const scale = Math.max(box.w / img.width, box.h / img.height);
+      const sw = box.w / scale;
+      const sh = box.h / scale;
+      ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, box.x, box.y, box.w, box.h);
+    }
+    const fade = wide ? ctx.createLinearGradient(box.x, 0, box.x + 260, 0) : ctx.createLinearGradient(0, box.h - 200, 0, box.h);
+    fade.addColorStop(0, wide ? 'rgba(8,5,13,1)' : 'rgba(8,5,13,0)');
+    fade.addColorStop(1, wide ? 'rgba(8,5,13,0)' : 'rgba(8,5,13,1)');
+    ctx.fillStyle = fade;
+    ctx.fillRect(box.x, box.y, wide ? 260 : box.w, box.h);
+
+    const pad = wide ? 90 : 80;
+    const textW = wide ? 620 : W - pad * 2;
+    let y = wide ? 170 : box.h + 30;
+    ctx.textBaseline = 'top';
+
+    ctx.fillStyle = '#f5c451';
+    ctx.font = '700 44px Rajdhani, sans-serif';
+    ctx.fillText("WE'RE IN", pad, y);
+    y += 58;
+
+    ctx.fillStyle = '#f1ecf7';
+    const name = d.name.toUpperCase();
+    const nameSize = fitText(ctx, name, textW, wide ? 112 : 100, 700, 'Rajdhani, sans-serif');
+    ctx.fillText(name, pad, y);
+    y += Math.round(nameSize * 0.95) + 14;
+
+    const who = [d.p1, d.p2].map((p) => p.twitch || p.epic).join(' & ');
+    ctx.fillStyle = '#d6cbe6';
+    fitText(ctx, who, textW, 40, 600, 'Inter, sans-serif');
+    ctx.fillText(who, pad, y);
+    y += 74;
+
+    // candy-cane stripe
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad, y, 200, 10);
+    ctx.clip();
+    ctx.fillStyle = '#fbf4f6';
+    ctx.fillRect(pad, y, 200, 10);
+    ctx.fillStyle = '#e8364f';
+    for (let x = pad - 20; x < pad + 220; x += 20) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + 10);
+      ctx.lineTo(x + 10, y);
+      ctx.lineTo(x + 20, y);
+      ctx.lineTo(x + 10, y + 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    y += 36;
+
+    ctx.fillStyle = '#f1ecf7';
+    ctx.font = '700 48px Rajdhani, sans-serif';
+    ctx.fillText('VIBESMAS TOURNAMENT', pad, y);
+    y += 58;
+    const when = 'Sat, Dec 12 · 9 AM PST / 12 PM EST · Fortnite Zero Build duos';
+    ctx.fillStyle = '#d6cbe6';
+    fitText(ctx, when, textW, 30, 500, 'Inter, sans-serif');
+    ctx.fillText(when, pad, y);
+
+    ctx.fillStyle = '#b98cff';
+    ctx.font = '600 30px Inter, sans-serif';
+    ctx.fillText('vibesbyvince.com/vibesmas', pad, H - pad - 30);
+    return c;
+  }
+
+  async function drawShare(kind, previewOnly) {
+    const c = await renderShare(kind);
+    if (previewOnly) {
+      $('share-preview').src = c.toDataURL('image/jpeg', 0.85);
+      $('share-preview').hidden = false;
+      return;
+    }
+    c.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `vibesmas-${current.name.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${kind}.png`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }, 'image/png');
+  }
+  $('share-square').addEventListener('click', () => drawShare('square'));
+  $('share-wide').addEventListener('click', () => drawShare('wide'));
 
   $('st-copy').addEventListener('click', async () => {
     try {

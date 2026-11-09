@@ -101,6 +101,27 @@
     }
     pod.hidden = !(anyScores && rows.length);
 
+    // highlights and game-day links
+    const mvp = $('mvp');
+    mvp.textContent = '';
+    const stat = (label, value) => {
+      const div = el('div');
+      div.append(el('dt', '', label), el('dd', '', value));
+      mvp.append(div);
+    };
+    const link = (text, href) => {
+      const div = el('div');
+      const a = el('a', '', text);
+      a.href = href;
+      div.append(a);
+      mvp.append(div);
+    };
+    if (s.mvp && s.mvp.mostKills) stat('Most kills', `${s.mvp.mostKills.name} · ${s.mvp.mostKills.kills}`);
+    if (s.mvp && s.mvp.bestGame) stat('Best game', `${s.mvp.bestGame.name} · ${s.mvp.bestGame.kills} kills in game ${s.mvp.bestGame.game}`);
+    if (s.phase === 'live') link('Watch the streamers live', '/vibesmas/watch');
+    if (s.phase === 'final' || s.phase === 'review') link('Results page', '/vibesmas/2026');
+    mvp.hidden = mvp.children.length === 0;
+
     // table
     const g = view === 'overall' ? 0 : Number(view);
     const head = $('thead');
