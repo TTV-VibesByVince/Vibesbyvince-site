@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign up · Vibesmas Tournament · VibesByVince</title>
+<meta name="description" content="Sign up your duo for the Vibesmas Tournament, a Fortnite Zero Build duos tournament for Twitch streamers on December 12, 2026.">
+<meta name="theme-color" content="#08050d">
+<meta name="referrer" content="no-referrer">
+<link rel="canonical" href="https://vibesbyvince.com/vibesmas/signup">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vibesmas.css">
+<link rel="stylesheet" href="/css/matrix.css">
+
+<meta property="og:title" content="Sign up · Vibesmas Tournament">
+<meta property="og:description" content="Fortnite Zero Build duos for Twitch streamers. Saturday, December 12, 2026. $450 in prizes.">
+<meta property="og:image" content="https://vibesbyvince.com/assets/video/vibesmas-poster.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/vibesmas/signup">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="vm-body">
+
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="vm-page vm-page--tight">
+
+  <nav class="vm-nav" aria-label="Tournament">
+    <a class="vm-pillbtn" href="/vibesmas">&larr; Vibesmas Tournament</a>
+    <span class="vm-meta" id="spots">Registration closes Dec 5, 11:59 PM MST</span>
+  </nav>
+
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <h1 data-egg-tap class="vm-h1" id="page-title">Sign up your duo</h1>
+    <p class="vm-intro" id="page-intro">One sign-up per duo. Vince reviews every team, and approved duos show up on the roster and the leaderboard.</p>
+    <div class="vm-cane vm-cane--short" aria-hidden="true" style="margin-top:6px"></div>
+  </header>
+
+  <div class="vm-split">
+    <div class="vm-split__main">
+
+      <p class="vm-form-error" id="closed" hidden></p>
+
+      <!-- status (after signing up, or opened from the private link) -->
+      <section class="vm-status" id="status" aria-live="polite" hidden>
+        <span class="vm-badge" id="st-badge"></span>
+        <h2 class="vm-status__h" id="st-title"></h2>
+        <p id="st-text"></p>
+        <p class="vm-note" id="st-note" hidden></p>
+        <dl class="vm-dl" id="st-details"></dl>
+        <div>
+          <p style="margin:0 0 8px">Your private status link. Save it to check back or make changes:</p>
+          <div class="vm-link-row">
+            <code id="st-link"></code>
+            <button class="vm-btn vm-btn--ghost vm-btn--small" type="button" id="st-copy">Copy link</button>
+          </div>
+        </div>
+        <div class="vm-row">
+          <button class="vm-btn vm-btn--small" type="button" id="st-edit">Edit duo</button>
+          <button class="vm-linkbtn" type="button" id="st-withdraw">Withdraw</button>
+          <span id="st-confirm" hidden class="vm-row">
+            <span>Remove your duo from the tournament?</span>
+            <button class="vm-btn vm-btn--danger vm-btn--small" type="button" id="st-withdraw-yes">Yes, withdraw</button>
+            <button class="vm-linkbtn" type="button" id="st-withdraw-no">Keep it</button>
+          </span>
+        </div>
+      </section>
+
+      <!-- the form -->
+      <form class="vm-form" id="form" novalidate hidden>
+        <p class="vm-form-error" id="form-error" role="alert" hidden></p>
+
+        <label class="vm-field vm-field--big">Duo name
+          <input class="vm-input" type="text" name="name" id="f-name" maxlength="32" autocomplete="off" required>
+        </label>
+
+        <fieldset class="vm-box">
+          <legend>Who's streaming on Twitch?</legend>
+          <div class="vm-radios">
+            <label class="vm-radio"><input type="radio" name="streams" value="p1" checked><span>Player 1</span></label>
+            <label class="vm-radio"><input type="radio" name="streams" value="p2"><span>Player 2</span></label>
+            <label class="vm-radio"><input type="radio" name="streams" value="both"><span>Both of us</span></label>
+          </div>
+          <p class="vm-small">At least one of you streams the tournament live. The other player doesn't need Twitch.</p>
+        </fieldset>
+
+        <fieldset class="vm-fieldset" data-player="1">
+          <legend>Player 1 · you</legend>
+          <label class="vm-field">Epic name
+            <input class="vm-input" type="text" name="p1-epic" maxlength="16" autocomplete="off" required>
+            <span class="vm-help">As it shows in Fortnite.</span>
+          </label>
+          <label class="vm-field">Twitch name <span class="vm-help" data-req="p1-twitch">required</span>
+            <input class="vm-input" type="text" name="p1-twitch" maxlength="25" autocomplete="off" spellcheck="false">
+          </label>
+          <label class="vm-field">Discord name <span class="vm-help">optional</span>
+            <input class="vm-input" type="text" name="p1-discord" maxlength="32" autocomplete="off" spellcheck="false">
+          </label>
+        </fieldset>
+
+        <fieldset class="vm-fieldset" data-player="2">
+          <legend>Player 2 · teammate</legend>
+          <label class="vm-field">Epic name
+            <input class="vm-input" type="text" name="p2-epic" maxlength="16" autocomplete="off" required>
+            <span class="vm-help">As it shows in Fortnite.</span>
+          </label>
+          <label class="vm-field">Twitch name <span class="vm-help" data-req="p2-twitch">optional</span>
+            <input class="vm-input" type="text" name="p2-twitch" maxlength="25" autocomplete="off" spellcheck="false">
+          </label>
+          <label class="vm-field">Discord name <span class="vm-help">optional</span>
+            <input class="vm-input" type="text" name="p2-discord" maxlength="32" autocomplete="off" spellcheck="false">
+          </label>
+        </fieldset>
+        <p class="vm-small" style="margin-top:-14px">At least one of you needs Discord. That person checks in, gets the matchmaking keys and posts the screenshots.</p>
+
+        <div class="vm-hp" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+        <fieldset class="vm-box">
+          <legend>We confirm that</legend>
+          <label class="vm-check"><input type="checkbox" name="age21"><span>Both players are 21 or older.</span></label>
+          <label class="vm-check"><input type="checkbox" name="streamVod"><span>At least one of us will stream the tournament live on Twitch, and our VODs will stay up.</span></label>
+          <label class="vm-check"><input type="checkbox" name="rules"><span>We've read the <a href="/vibesmas#rules" target="_blank" rel="noopener">rules and point system</a> and joined the <a href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener">Discord</a>.</span></label>
+        </fieldset>
+
+        <div class="vm-row">
+          <button class="vm-btn vm-btn--cane" type="submit" id="submit">Send for approval</button>
+          <button class="vm-linkbtn" type="button" id="cancel-edit" hidden>Cancel</button>
+          <span class="vm-small" id="submit-note">You can edit your duo until it's approved.</span>
+        </div>
+      </form>
+
+      <p class="vm-empty" id="loading">Loading&hellip;</p>
+    </div>
+
+    <aside class="vm-split__side" aria-label="What happens next">
+      <h2 style="margin:0;font:700 15px 'Inter',sans-serif;letter-spacing:0">What happens next</h2>
+      <ol class="vm-steps">
+        <li>Vince reviews your duo. Twitch names are checked automatically.</li>
+        <li>Your status link shows <b>Approved</b> and you're added to the roster.</li>
+        <li>On December 12, check in on Discord by 9:45 AM MST.</li>
+        <li>Matchmaking keys are posted in Discord before every game.</li>
+      </ol>
+      <p class="vm-aside-note">No substitutes once the tournament starts. Questions? Ask in the <a href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener">Discord</a>.</p>
+    </aside>
+  </div>
+
+  <footer class="vm-footer">
+    <span>Vibesmas Tournament · Saturday, December 12, 2026</span>
+    <span>&copy; <span id="year">2026</span> vibesbyvince &middot; <a href="/privacy">privacy</a></span>
+  </footer>
+</main>
+
+<script src="/js/vibesmas-signup.js"></script>
+<script src="/js/easter-egg.js" defer></script>
+</body>
+</html>

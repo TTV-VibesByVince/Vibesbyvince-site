@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard · Vibesmas Tournament · VibesByVince</title>
+<meta name="description" content="Live standings for the Vibesmas Tournament, a Fortnite Zero Build duos tournament for Twitch streamers.">
+<meta name="theme-color" content="#08050d">
+<link rel="canonical" href="https://vibesbyvince.com/vibesmas/leaderboard">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vibesmas.css">
+<link rel="stylesheet" href="/css/matrix.css">
+
+<meta property="og:title" content="Vibesmas Tournament leaderboard">
+<meta property="og:description" content="Live standings: Fortnite Zero Build duos, 5 games, $450 in prizes.">
+<meta property="og:image" content="https://vibesbyvince.com/assets/video/vibesmas-poster.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/vibesmas/leaderboard">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="vm-body">
+
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="vm-page vm-page--tight">
+
+  <nav class="vm-nav" aria-label="Tournament">
+    <a class="vm-pillbtn" href="/vibesmas">&larr; Vibesmas Tournament</a>
+    <span class="vm-meta" id="updated" aria-live="polite">Loading&hellip;</span>
+  </nav>
+
+  <header class="vm-board-head">
+    <div>
+      <h1 data-egg-tap class="vm-h1">Leaderboard</h1>
+      <div class="vm-cane vm-cane--short" aria-hidden="true"></div>
+    </div>
+    <p class="vm-phase" id="phase" role="status" hidden><i aria-hidden="true"></i><span></span></p>
+  </header>
+
+  <ol class="vm-podium" id="podium" aria-label="Top three" hidden></ol>
+
+  <div class="vm-tabs" role="tablist" aria-label="Scores view" id="tabs"></div>
+
+  <div class="vm-tablewrap">
+    <table class="vm-table">
+      <caption id="caption"></caption>
+      <thead><tr id="thead"></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="vm-empty" id="empty" hidden></p>
+
+  <p class="vm-small" style="max-width:72ch">Points: 1st 10 · 2nd 8 · 3rd 6 · 4th 4 · 5th 2 · 6th and below 0 · each elimination 1 (per duo).
+    Ties go to total kills across all games. Scores appear after each game is checked.</p>
+
+  <footer class="vm-footer">
+    <span>Vibesmas Tournament · Saturday, December 12, 2026</span>
+    <span>&copy; <span id="year">2026</span> vibesbyvince &middot; <a href="/privacy">privacy</a></span>
+  </footer>
+</main>
+
+<script src="/js/vibesmas-leaderboard.js"></script>
+<script src="/js/easter-egg.js" defer></script>
+</body>
+</html>

@@ -4,8 +4,45 @@ Single-page stream hub for VibesByVince. Plain HTML/CSS/JS, deployed on
 Cloudflare Workers (static assets) — push to `main` and it redeploys.
 `wrangler.jsonc` + `worker/index.js` handle the deploy config and the
 dynamic routes (`/api/youtube`, `/api/schedule`, `/api/calendar/*`, `/api/tiktok`,
-`/api/projects`, `/api/project-image/<repo>`, `/api/fortnite/*`);
+`/api/projects`, `/api/project-image/<repo>`, `/api/fortnite/*`, `/api/vibesmas/*`);
 everything else is served directly as static files.
+
+## Vibesmas Tournament (`/vibesmas`)
+
+Fortnite Zero Build duos tournament on Saturday, December 12, 2026.
+
+- `/vibesmas`: info, prizes, point system, rules and the approved duos.
+  The hero plays `assets/video/vibesmas-loop.mp4` (muted loop).
+- `/vibesmas/signup`: a duo signs up (duo name, Epic names, Twitch names
+  for whoever streams, at least one Discord name, 21+ and rules boxes).
+  Twitch names are checked against Twitch. Each duo gets a private status
+  link (`/vibesmas/signup#k=<key>`, only a hash of the key is stored) to
+  check approval, edit while not approved, or withdraw. Registration
+  closes Dec 5, 11:59 PM MST; at most 40 approved duos.
+- `/vibesmas/leaderboard`: live standings (refreshes every 30 s). Only
+  games published in the admin count. Points: 1st 10, 2nd 8, 3rd 6, 4th 4,
+  5th 2, +1 per duo kill; ties go to total kills.
+- `/vibesmas/overlay`: OBS browser source (1920×1080, transparent).
+  `?rows=5` sets how many duos show (3–10), `&side=left` moves the panel.
+- `/vibesmas/admin`: approve / decline (with a note the duo sees),
+  enter each game's placements and kills, publish games, set the status
+  (before / live / 24-hour review / final), the game in progress and the
+  outfit winner. Activity log on the side.
+- Code: `worker/vibesmas.js` (tables `vibesmas_*` in the same D1 database,
+  created automatically), `vibesmas.html`, `vibesmas/*.html`,
+  `js/vibesmas*.js`, `css/vibesmas.css`. Tournament dates and the duo cap
+  are in `TOURNAMENT` at the top of `worker/vibesmas.js`.
+
+Setup:
+
+1. **Admin login:** in Cloudflare Zero Trust → Access → Applications, edit
+   the calendar admin application and add two more destinations:
+   `vibesbyvince.com/vibesmas/admin` and `vibesbyvince.com/api/vibesmas/admin`.
+   Same application means the same AUD tag and the same allowed email.
+2. **Discord alerts (optional):** create a webhook on a private channel and
+   save its URL as the secret `VIBESMAS_DISCORD_WEBHOOK`
+   (Workers & Pages → vibesbyvince-site → Settings → Variables and Secrets).
+   Each new or edited sign-up posts there with a link to the admin page.
 
 ## Stream schedule (`/calendar`)
 

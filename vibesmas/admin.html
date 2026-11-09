@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibesmas Admin · VibesByVince</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#08050d">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vibesmas.css">
+</head>
+<body class="vm-body">
+
+<div class="bg-glow" aria-hidden="true"></div>
+
+<!-- Protected by Cloudflare Access; the API also checks the login itself. -->
+<main class="vm-page vm-page--tight">
+
+  <div class="vm-admin-bar">
+    <div class="vm-row" style="align-items:baseline;gap:14px">
+      <h1>Vibesmas admin</h1>
+      <span class="vm-meta" id="signed-in"></span>
+    </div>
+    <div class="vm-row">
+      <a class="vm-pillbtn" href="/vibesmas/leaderboard" target="_blank" rel="noopener">Public leaderboard &nearr;</a>
+      <a class="vm-pillbtn" href="/vibesmas/overlay" target="_blank" rel="noopener">OBS overlay &nearr;</a>
+      <a class="vm-pillbtn" href="/cdn-cgi/access/logout">Log out</a>
+    </div>
+  </div>
+
+  <p class="vm-flash vm-flash--warn" id="error" role="alert" hidden></p>
+  <p class="vm-flash" id="flash" role="status" hidden></p>
+
+  <div class="vm-tabs" role="tablist" aria-label="Admin sections">
+    <button class="vm-tab" type="button" role="tab" data-tab="approvals" aria-selected="true" id="tab-approvals">Approvals</button>
+    <button class="vm-tab" type="button" role="tab" data-tab="scores" aria-selected="false">Enter scores</button>
+    <button class="vm-tab" type="button" role="tab" data-tab="results" aria-selected="false">Results</button>
+  </div>
+
+  <div class="vm-split">
+    <div class="vm-split__main">
+
+      <!-- approvals -->
+      <section id="pane-approvals" aria-label="Approvals" style="display:flex;flex-direction:column;gap:14px">
+        <div class="vm-row" style="justify-content:space-between">
+          <p style="margin:0" id="counts"></p>
+          <div class="vm-filter" role="group" aria-label="Show">
+            <button class="vm-tab" type="button" data-filter="pending" aria-pressed="true">Waiting</button>
+            <button class="vm-tab" type="button" data-filter="approved" aria-pressed="false">Approved</button>
+            <button class="vm-tab" type="button" data-filter="declined" aria-pressed="false">Declined</button>
+            <button class="vm-tab" type="button" data-filter="all" aria-pressed="false">All</button>
+          </div>
+        </div>
+        <div id="duo-list" style="display:flex;flex-direction:column;gap:14px"></div>
+        <p class="vm-empty" id="duo-empty" hidden></p>
+      </section>
+
+      <!-- scores -->
+      <section id="pane-scores" aria-label="Enter scores" hidden style="display:flex;flex-direction:column;gap:14px">
+        <div class="vm-row" style="justify-content:space-between">
+          <label class="vm-row" style="font-weight:600">Game
+            <select class="vm-select" id="game" style="width:auto;min-height:44px"></select>
+          </label>
+          <span class="vm-small" id="game-state"></span>
+        </div>
+        <p class="vm-small">Enter each duo's placement and total duo kills from their screenshots. Leave placement empty for a duo that didn't play. Points add up as you type. Nothing goes public until you publish.</p>
+        <div class="vm-tablewrap">
+          <table class="vm-table" style="min-width:560px">
+            <thead><tr><th scope="col">Duo</th><th scope="col">Placement</th><th scope="col">Duo kills</th><th scope="col" class="num">Points</th></tr></thead>
+            <tbody id="score-rows"></tbody>
+          </table>
+        </div>
+        <div class="vm-row">
+          <button class="vm-btn" type="button" id="publish">Publish game</button>
+          <button class="vm-btn vm-btn--ghost" type="button" id="save-draft">Save draft</button>
+          <button class="vm-linkbtn" type="button" id="unpublish" hidden>Unpublish</button>
+          <span class="vm-small" id="score-warn" style="color:#f7dc9a !important"></span>
+        </div>
+      </section>
+
+      <!-- results -->
+      <section id="pane-results" aria-label="Results" hidden style="display:flex;flex-direction:column;gap:14px">
+        <div class="vm-card">
+          <h2 style="margin:0;font:700 20px 'Inter',sans-serif;letter-spacing:0">Tournament status</h2>
+          <p class="vm-small">Sets the banner on the leaderboard and the overlay.</p>
+          <div class="vm-seg" role="radiogroup" aria-label="Tournament status" id="phases">
+            <button type="button" role="radio" data-phase="signups" aria-checked="false">Before the tournament</button>
+            <button type="button" role="radio" data-phase="live" aria-checked="false">Live</button>
+            <button type="button" role="radio" data-phase="review" aria-checked="false">Start 24-hour review</button>
+            <button type="button" role="radio" data-phase="final" aria-checked="false">Results final</button>
+          </div>
+          <label class="vm-row" style="font-weight:600">Game in progress
+            <select class="vm-select" id="current-game" style="width:auto;min-height:44px"></select>
+          </label>
+        </div>
+        <div class="vm-card" style="background:#10251a;border-color:rgba(47,168,102,.4)">
+          <h2 style="margin:0;font:700 20px 'Inter',sans-serif;letter-spacing:0">Best holiday outfit winner</h2>
+          <p class="vm-small" style="color:#cfe9d9 !important">Decided by the Discord vote. Shows on the tournament page once set.</p>
+          <div class="vm-row">
+            <input class="vm-input" id="outfit" maxlength="40" placeholder="Winner's name" aria-label="Outfit winner's name">
+            <button class="vm-btn vm-btn--small" type="button" id="outfit-save">Save</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="vm-split__side" aria-label="Activity">
+      <h2 style="margin:0;font:700 15px 'Inter',sans-serif;letter-spacing:0">Activity</h2>
+      <ol class="vm-log" id="log"></ol>
+    </aside>
+  </div>
+</main>
+
+<script src="/js/vibesmas-admin.js"></script>
+</body>
+</html>
