@@ -344,7 +344,7 @@
     const v = $('current-game').value;
     setting({ currentGame: v ? Number(v) : null }, v ? `Game ${v} marked as in progress.` : 'No game in progress.');
   });
-  $('outfit-save').addEventListener('click', () => setting({ outfitWinner: $('outfit').value }, $('outfit').value ? 'Outfit winner saved.' : 'Outfit winner cleared.'));
+  $('outfit-save').addEventListener('click', () => setting({ outfitWinner: $('outfit').value }, $('outfit').value ? 'Sweater contest winner saved.' : 'Sweater contest winner cleared.'));
 
   function renderResults() {
     document.querySelectorAll('[data-phase]').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.phase === S.phase)));

@@ -27,7 +27,7 @@ Fortnite Zero Build duos tournament on Saturday, December 12, 2026.
 - `/vibesmas/admin`: approve / decline (with a note the duo sees),
   enter each game's placements and kills, publish games, set the status
   (before / live / 24-hour review / final), the game in progress and the
-  outfit winner. Activity log on the side.
+  ugly Christmas sweater contest winner. Activity log on the side.
 - Code: `worker/vibesmas.js` (tables `vibesmas_*` in the same D1 database,
   created automatically), `vibesmas.html`, `vibesmas/*.html`,
   `js/vibesmas*.js`, `css/vibesmas.css`. Tournament dates and the duo cap
