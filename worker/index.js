@@ -11,11 +11,12 @@ import { handleFortnite } from './fortnite.js';
 import { handleCalendar, nextStream } from './calendar.js';
 import { handleStreamTeams } from './streamteams.js';
 import { handleClip } from './clip.js';
+import { handleVibesmas } from './vibesmas.js';
 
 const CHANNEL_ID = 'UCyqkH9sniDc1bEQwDcpky9w';
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/youtube') {
@@ -57,7 +58,12 @@ export default {
       return handleCalendar(request, env, url);
     }
 
-    // Videos (the easter egg): serve with Range support for iPhone Safari
+    // Vibesmas Tournament (/vibesmas) — see worker/vibesmas.js
+    if (url.pathname === '/api/vibesmas' || url.pathname.startsWith('/api/vibesmas/')) {
+      return handleVibesmas(request, env, url, ctx);
+    }
+
+    // Videos (the easter egg, the Vibesmas logo): serve with Range support for iPhone Safari
     if (url.pathname.startsWith('/assets/video/')) {
       return handleVideo(request, env);
     }

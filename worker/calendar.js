@@ -183,7 +183,7 @@ async function icsFeed(env) {
 
 let jwksCache = { at: 0, keys: null, domain: null };
 
-async function requireAdmin(request, env) {
+export async function requireAdmin(request, env) {
   const url = new URL(request.url);
 
   // Local testing only: `wrangler dev` on this computer with

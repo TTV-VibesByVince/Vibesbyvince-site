@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibesmas Tournament · VibesByVince</title>
+<meta name="description" content="The Vibesmas Tournament: a Fortnite Zero Build duos tournament for Twitch streamers on Saturday, December 12, 2026. $450 in prizes. Sign up, rules and point system.">
+<meta name="theme-color" content="#08050d">
+<link rel="canonical" href="https://vibesbyvince.com/vibesmas">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/rajdhani-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/vibesmas.css">
+<link rel="stylesheet" href="/css/matrix.css">
+
+<meta property="og:title" content="Vibesmas Tournament · VibesByVince">
+<meta property="og:description" content="Fortnite Zero Build duos for Twitch streamers. Saturday, December 12, 2026. $450 in prizes.">
+<meta property="og:image" content="https://vibesbyvince.com/assets/video/vibesmas-poster.jpg">
+<meta property="og:url" content="https://vibesbyvince.com/vibesmas">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body class="vm-body">
+
+<div class="bg-glow" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+
+<main class="vm-page">
+
+  <nav class="vm-nav" aria-label="Tournament">
+    <a class="vm-pillbtn" href="/">&larr; vibesbyvince.com</a>
+    <div class="vm-nav__links">
+      <a href="#prizes">Prizes</a>
+      <a href="#format">Points</a>
+      <a href="#rules">Rules</a>
+      <a href="#duos">Duos</a>
+      <a href="/vibesmas/leaderboard">Leaderboard</a>
+    </div>
+  </nav>
+
+  <header>
+    <svg class="vm-lights" aria-hidden="true" viewBox="0 0 1080 46" preserveAspectRatio="none">
+      <path d="M0 6 Q 67 34 135 8 T 270 8 T 405 8 T 540 8 T 675 8 T 810 8 T 945 8 T 1080 6" fill="none" stroke="#2c3b2f" stroke-width="2.5"/>
+      <g>
+        <ellipse class="vm-bulb" cx="34" cy="24" rx="6" ry="9" fill="#e8364f"/>
+        <ellipse class="vm-bulb" cx="101" cy="25" rx="6" ry="9" fill="#2fa866"/>
+        <ellipse class="vm-bulb" cx="169" cy="22" rx="6" ry="9" fill="#f5c451"/>
+        <ellipse class="vm-bulb" cx="236" cy="25" rx="6" ry="9" fill="#5aa9ff"/>
+        <ellipse class="vm-bulb" cx="304" cy="24" rx="6" ry="9" fill="#e8364f"/>
+        <ellipse class="vm-bulb" cx="371" cy="25" rx="6" ry="9" fill="#2fa866"/>
+        <ellipse class="vm-bulb" cx="439" cy="22" rx="6" ry="9" fill="#f5c451"/>
+        <ellipse class="vm-bulb" cx="506" cy="25" rx="6" ry="9" fill="#5aa9ff"/>
+        <ellipse class="vm-bulb" cx="574" cy="24" rx="6" ry="9" fill="#e8364f"/>
+        <ellipse class="vm-bulb" cx="641" cy="25" rx="6" ry="9" fill="#2fa866"/>
+        <ellipse class="vm-bulb" cx="709" cy="22" rx="6" ry="9" fill="#f5c451"/>
+        <ellipse class="vm-bulb" cx="776" cy="25" rx="6" ry="9" fill="#5aa9ff"/>
+        <ellipse class="vm-bulb" cx="844" cy="24" rx="6" ry="9" fill="#e8364f"/>
+        <ellipse class="vm-bulb" cx="911" cy="25" rx="6" ry="9" fill="#2fa866"/>
+        <ellipse class="vm-bulb" cx="979" cy="22" rx="6" ry="9" fill="#f5c451"/>
+        <ellipse class="vm-bulb" cx="1046" cy="25" rx="6" ry="9" fill="#5aa9ff"/>
+      </g>
+    </svg>
+    <div class="vm-hero">
+      <video class="vm-hero__video" id="logo-video" autoplay muted loop playsinline preload="metadata"
+             poster="/assets/video/vibesmas-poster.jpg" aria-label="Animated Vibesmas Tournament logo">
+        <source src="/assets/video/vibesmas-loop.mp4" type="video/mp4">
+      </video>
+      <div class="vm-hero__copy">
+        <h1 data-egg-tap class="vm-h1">Vibesmas Tournament</h1>
+        <p class="vm-hero__date"><b>Saturday, December 12, 2026</b><br><span>Fortnite Zero Build · Duos · 5 games · 21+</span></p>
+        <ul class="vm-times" aria-label="Start time">
+          <li><b>9:00 AM</b> <span>PST</span></li>
+          <li><b>10:00 AM</b> <span>MST</span></li>
+          <li><b>11:00 AM</b> <span>CST</span></li>
+          <li><b>12:00 PM</b> <span>EST</span></li>
+        </ul>
+        <p class="vm-local" id="local-time" hidden></p>
+        <div class="vm-actions">
+          <a class="vm-btn vm-btn--cane" id="signup-cta" href="/vibesmas/signup">Sign up your duo</a>
+          <a class="vm-btn vm-btn--ghost" href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener">Join the Discord</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="vm-reg" aria-label="Registration">
+    <p id="reg-text">Registration closes <b>Saturday, December 5 at 11:59 PM MST</b>. Every duo is approved by Vince before it joins the roster.</p>
+    <div class="vm-reg__meter">
+      <div class="vm-bar" role="progressbar" aria-label="Approved duos" aria-valuemin="0" aria-valuemax="40" aria-valuenow="0" id="reg-bar"><div id="reg-fill"></div></div>
+      <span class="vm-reg__count" id="reg-count">– / 40 duos</span>
+    </div>
+  </section>
+
+  <section class="vm-section" id="prizes" aria-labelledby="prizes-h">
+    <h2 id="prizes-h" class="vm-h2">$450 in prizes</h2>
+    <div class="vm-prizes">
+      <div class="vm-prize-main">
+        <div class="vm-prize-main__first"><span>1st place duo</span><b>$200</b></div>
+        <div class="vm-prize-main__rest">
+          <div><span class="vm-m2">2nd</span><b>$100</b></div>
+          <div><span class="vm-m3">3rd</span><b>$50</b></div>
+        </div>
+      </div>
+      <div class="vm-prize-outfit">
+        <svg aria-hidden="true" width="48" height="60" viewBox="0 0 48 60" style="flex:none"><path d="M24 3l2.4 4.8 5.3.8-3.8 3.7.9 5.2L24 15l-4.8 2.5.9-5.2-3.8-3.7 5.3-.8z" fill="#f5c451"/><path d="M24 16 36 32h-6l10 13h-8l10 9H6l10-9H8l10-13h-6z" fill="#2fa866"/><circle cx="18" cy="36" r="2.4" fill="#e8364f"/><circle cx="30" cy="43" r="2.4" fill="#f5c451"/><circle cx="22" cy="48" r="2.4" fill="#e8364f"/><rect x="20.5" y="54" width="7" height="6" rx="1" fill="#7a4b2a"/></svg>
+        <div>
+          <span>Best holiday outfit</span>
+          <b>$100</b>
+          <p id="outfit-text">Post your in-game holiday fit in Discord. The community votes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="vm-cane vm-cane--rule" aria-hidden="true"></div>
+
+  <section class="vm-two" id="format">
+    <div class="vm-col">
+      <h2 class="vm-h2">Format</h2>
+      <p>Five Zero Build Battle Royale games. Points from every game add up to one final score, and a
+        live leaderboard is shown on stream the whole time.</p>
+      <ul class="vm-list">
+        <li>Open to all Twitch streamers. Duos only, and both players must be 21 or older.</li>
+        <li>At least one player on each duo streams the tournament live on Twitch.</li>
+        <li>Be checked in and ready by <b>9:45 AM MST</b> (8:45 PST · 10:45 CST · 11:45 EST).</li>
+        <li>The custom matchmaking key for each game is posted in Discord before every round.</li>
+        <li>No substitutes once the tournament starts.</li>
+      </ul>
+    </div>
+    <div class="vm-col">
+      <h2 class="vm-h2">Points</h2>
+      <table class="vm-points">
+        <caption class="vm-hp">Points per game</caption>
+        <tbody>
+          <tr><th scope="row">1st place</th><td>10</td></tr>
+          <tr><th scope="row">2nd place</th><td>8</td></tr>
+          <tr><th scope="row">3rd place</th><td>6</td></tr>
+          <tr><th scope="row">4th place</th><td>4</td></tr>
+          <tr><th scope="row">5th place</th><td>2</td></tr>
+          <tr><th scope="row">6th and below</th><td>0</td></tr>
+          <tr><th scope="row">Each elimination</th><td>+1</td></tr>
+        </tbody>
+      </table>
+      <p class="vm-small">Eliminations count per duo. Ties are broken by total kills across all five games.
+        <a href="/vibesmas/leaderboard">See the live leaderboard</a>.</p>
+    </div>
+  </section>
+
+  <section class="vm-shots" aria-labelledby="shots-h">
+    <div class="vm-col">
+      <h2 id="shots-h" class="vm-h2">Screenshots, every round</h2>
+      <p>One person per duo posts screenshots in the Discord channel after every match. Don't wait
+        until the end of the tournament.</p>
+    </div>
+    <dl>
+      <div><dt>Top 5 duos</dt><dd>Your end-of-match placement screen, your stats and your teammate's stats.</dd></div>
+      <div><dt>Everyone else</dt><dd>Your stats and your teammate's stats.</dd></div>
+      <div class="vm-warn">Use the end-of-match placement screen to show placement. The Finish column in
+        the replay counts players, not teams, so it can be misleading.</div>
+    </dl>
+  </section>
+
+  <section class="vm-two" id="rules" aria-labelledby="rules-h">
+    <div class="vm-col">
+      <h2 id="rules-h" class="vm-h2">Rules</h2>
+      <ul class="vm-list">
+        <li>No teaming.</li>
+        <li>No hacks or system mods.</li>
+        <li>Twitch VODs must stay available after your stream.</li>
+        <li>Both players must be 21 or older.</li>
+        <li>Each duo needs at least one player on Twitch (who streams) and one on Discord (who checks
+          in and posts screenshots). It can be the same person.</li>
+        <li>Rules can change or be added at any time, so keep an eye on Discord. There are no weapon
+          bans right now, but a weapon could be banned in a later game if needed.</li>
+      </ul>
+    </div>
+    <div class="vm-col">
+      <h2 class="vm-h2">After the final game</h2>
+      <p>Winners are announced as soon as possible. Then there is a <b>24-hour window</b> to raise
+        concerns about misconduct such as cheating, mods or hacks. Concerns need evidence, which is
+        why VODs must stay up.</p>
+      <p>After 24 hours the scores are final and Vince reaches out to the winners to issue payment.</p>
+      <h3 class="vm-h3">Best holiday outfit</h3>
+      <p>Post a screenshot of your in-game holiday fit in the Discord channel (announced soon). The
+        winner is decided by votes in Discord, and you can bring your community in to vote for you.
+        Voting opens when the tournament starts and closes when it ends.</p>
+    </div>
+  </section>
+
+  <section class="vm-section" id="duos" aria-labelledby="duos-h">
+    <div class="vm-section__head">
+      <h2 id="duos-h" class="vm-h2">Approved duos</h2>
+      <span class="vm-meta" id="duos-count"></span>
+    </div>
+    <ul class="vm-roster" id="roster"></ul>
+    <p class="vm-empty" id="roster-empty" hidden>No duos approved yet. Yours could be first.</p>
+  </section>
+
+  <footer class="vm-footer">
+    <span>Questions? Ask in the <a href="https://discord.gg/N97wfq79S8" target="_blank" rel="noopener">VibesByVince Discord</a>.</span>
+    <span>&copy; <span id="year">2026</span> vibesbyvince &middot; <a href="/privacy">privacy</a></span>
+  </footer>
+</main>
+
+<script src="/js/vibesmas.js"></script>
+<script src="/js/easter-egg.js" defer></script>
+</body>
+</html>
