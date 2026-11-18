@@ -8,7 +8,8 @@
 //   DELETE /api/vibesmas/status?t=…      withdraw it
 // Admin (Cloudflare Access + the same checks as the calendar admin):
 //   GET    /api/vibesmas/admin/state
-//   POST   /api/vibesmas/admin/duo       approve / decline / reset / delete
+//   POST   /api/vibesmas/admin/duo       approve / decline / reset / delete,
+//                                        edit a team, remove one player
 //   POST   /api/vibesmas/admin/scores    save or publish one game's results
 //   POST   /api/vibesmas/admin/settings  phase, current game, outfit winner
 //
@@ -768,6 +769,58 @@ async function adminRoute(request, env, url, d, admin) {
       const at = action === 'checkin' ? nowIso() : null;
       await d.prepare('UPDATE vibesmas_duos SET checked_in_at = ? WHERE id = ?').bind(at, id).run();
       await log(d, actor, at ? `checked in ${row.name}` : `undid ${row.name}'s check-in`);
+    } else if (action === 'edit') {
+      // Vince can change a team at any time (name, players, who streams).
+      const v = validateDuo({ ...(b.duo || {}), age21: true, streamVod: true, rules: true });
+      if (v.error) return json(v, 400);
+      const x = v.duo;
+      const { results: linked } = await d.prepare('SELECT id FROM vibesmas_solo WHERE duo_id = ?').bind(id).all();
+      const conflict = await checkConflicts(d, x, id, (linked || []).map((r) => r.id));
+      if (conflict) return json(conflict, 409);
+      const tw = await checkTwitch(env, x);
+      if (tw) return json(tw, 400);
+      await d
+        .prepare(`UPDATE vibesmas_duos SET name = ?, streams = ?, p1_epic = ?, p1_twitch = ?, p1_discord = ?,
+          p2_epic = ?, p2_twitch = ?, p2_discord = ?, updated_at = ? WHERE id = ?`)
+        .bind(x.name, x.streams, x.p1_epic, x.p1_twitch, x.p1_discord, x.p2_epic, x.p2_twitch, x.p2_discord, nowIso(), id)
+        .run();
+      await log(d, actor, `edited ${row.name}${row.name !== x.name ? ` (now ${x.name})` : ''}`);
+    } else if (action === 'remove_player') {
+      // Take one player off a team. The team is dissolved and the player
+      // who stays goes back to the free agents, to be paired again.
+      if (Date.now() >= Date.parse(TOURNAMENT.start)) return json({ error: 'started' }, 409);
+      const out = Number(b.player);
+      if (out !== 1 && out !== 2) return json({ error: 'bad_request' }, 400);
+      const stay = out === 1 ? 2 : 1;
+      const removed = row[`p${out}_epic`];
+      const kept = row[`p${stay}_epic`];
+      const t = nowIso();
+      const { results: linked } = await d.prepare('SELECT * FROM vibesmas_solo WHERE duo_id = ?').bind(id).all();
+      const stmts = [
+        d.prepare('DELETE FROM vibesmas_scores WHERE duo_id = ?').bind(id),
+        d.prepare('DELETE FROM vibesmas_duos WHERE id = ?').bind(id),
+      ];
+      const keptSolo = (linked || []).find((r) => lower(r.epic) === lower(kept));
+      for (const r of linked || []) {
+        if (r === keptSolo) {
+          stmts.push(d.prepare("UPDATE vibesmas_solo SET status = 'looking', duo_id = NULL, updated_at = ? WHERE id = ?").bind(t, r.id));
+        } else {
+          stmts.push(d.prepare('DELETE FROM vibesmas_solo WHERE id = ?').bind(r.id));
+        }
+      }
+      if (!keptSolo) {
+        // a team that signed up together: the remaining player keeps the
+        // team's status link, which now shows them as a free agent
+        const streams = (row.streams === 'both' || row.streams === `p${stay}`) && row[`p${stay}_twitch`] ? 1 : 0;
+        stmts.push(
+          d
+            .prepare(`INSERT INTO vibesmas_solo (status, epic, twitch, discord, streams, note, token_hash, created_at, updated_at)
+              VALUES ('looking', ?, ?, ?, ?, ?, ?, ?, ?)`)
+            .bind(kept, row[`p${stay}_twitch`], row[`p${stay}_discord`] || '', streams, `Was on ${row.name}`, row.token_hash, t, t),
+        );
+      }
+      await d.batch(stmts);
+      await log(d, actor, `removed ${removed} from ${row.name}; ${kept} is back in free agents`);
     } else if (action === 'delete') {
       await d.batch([
         d.prepare('DELETE FROM vibesmas_scores WHERE duo_id = ?').bind(id),

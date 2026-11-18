@@ -11,8 +11,17 @@
   let game = null;
 
   const ERRORS = {
+    started: "The tournament has started, so players can't be removed. No substitutes once it starts.",
+    epic_required: 'Both players need an Epic name (3 to 16 characters).',
+    twitch_required: 'The player marked as streaming needs a Twitch name.',
+    twitch_invalid: "A Twitch name doesn't look right. Use just the name, like vibesbyvince.",
+    twitch_not_found: "One of the Twitch names isn't a real channel. Check the spelling.",
+    discord_invalid: "A Discord name doesn't look right.",
+    discord_required: 'At least one player needs a Discord name.',
+    same_player: 'Player 1 and Player 2 need to be different people.',
+    player_looking: 'That player is signed up as a free agent. Remove them from Free agents first.',
     pick_two: 'Tick exactly two players to pair.',
-    name_required: 'Give the new duo a name.',
+    name_required: 'Give the duo a name.',
     no_streamer: "Neither player will stream. Every duo needs at least one streamer, so pair one of them with someone who'll stream.",
     player_taken: 'One of these players is already in another duo.',
     name_taken: 'Another duo already has that name.',
@@ -179,25 +188,135 @@
       back.addEventListener('click', act(d, 'pending'));
       row.append(back);
     }
-    const del = el('button', 'vm-linkbtn', 'Remove');
-    del.type = 'button';
-    del.addEventListener('click', () => {
-      del.hidden = true;
-      const confirmRow = el('span', 'vm-row');
-      const yes = el('button', 'vm-btn vm-btn--danger vm-btn--small', `Yes, remove ${d.name}`);
+    card.append(row);
+
+    // edit / remove a player / delete team
+    const tools = el('div', 'vm-row');
+    const confirmArea = el('div', 'vm-row');
+    confirmArea.hidden = true;
+    const btn = (text, cls, fn) => {
+      const b = el('button', cls, text);
+      b.type = 'button';
+      b.addEventListener('click', fn);
+      tools.append(b);
+      return b;
+    };
+    const ask = (text, yesText, action, extra) => {
+      tools.hidden = true;
+      confirmArea.textContent = '';
+      const yes = el('button', 'vm-btn vm-btn--danger vm-btn--small', yesText);
       yes.type = 'button';
-      yes.addEventListener('click', act(d, 'delete'));
-      const keep = el('button', 'vm-linkbtn', 'Keep');
+      yes.addEventListener('click', async () => {
+        try {
+          await api('duo', { id: d.id, action, ...extra });
+          flash(action === 'delete' ? `${d.name} deleted.` : `${extra.name} removed. ${extra.kept} is back in Free agents.`);
+          await load();
+        } catch (err) {
+          fail(err);
+        }
+      });
+      const keep = el('button', 'vm-linkbtn', 'Cancel');
       keep.type = 'button';
       keep.addEventListener('click', () => {
-        confirmRow.remove();
-        del.hidden = false;
+        confirmArea.hidden = true;
+        tools.hidden = false;
       });
-      confirmRow.append(el('span', 'vm-small', 'Removes the duo and its scores.'), yes, keep);
-      row.append(confirmRow);
+      confirmArea.append(el('span', 'vm-small', text), yes, keep);
+      confirmArea.hidden = false;
+    };
+    btn('Edit team', 'vm-linkbtn', () => {
+      card.replaceWith(editCard(d));
     });
-    row.append(del);
-    card.append(row);
+    if (!started()) {
+      [1, 2].forEach((n) => {
+        const out = d[`p${n}`];
+        const stay = d[`p${n === 1 ? 2 : 1}`];
+        btn(`Remove ${out.twitch || out.epic}`, 'vm-linkbtn', () =>
+          ask(
+            `Take ${out.twitch || out.epic} off ${d.name}? The team is split up and ${stay.twitch || stay.epic} goes to Free agents to be paired again.`,
+            `Yes, remove ${out.twitch || out.epic}`,
+            'remove_player',
+            { player: n, name: out.twitch || out.epic, kept: stay.twitch || stay.epic },
+          ),
+        );
+      });
+    }
+    btn('Delete team', 'vm-linkbtn vm-bad', () =>
+      ask(`Delete ${d.name} completely, with its scores? This can't be undone.`, `Yes, delete ${d.name}`, 'delete', {}),
+    );
+    card.append(tools, confirmArea);
+    return card;
+  }
+
+  function started() {
+    return Date.now() >= Date.parse(S.start);
+  }
+
+  // Inline form for changing a team's name, players and streamer.
+  function editCard(d) {
+    const card = el('article', 'vm-card');
+    card.append(el('b', '', `Edit ${d.name}`));
+    const form = el('form', 'vm-form');
+    form.style.gap = '16px';
+    form.noValidate = true;
+    const input = (label, name, value, max) => {
+      const l = el('label', 'vm-field', label);
+      const i = el('input', 'vm-input');
+      i.name = name;
+      i.value = value || '';
+      i.maxLength = max;
+      i.autocomplete = 'off';
+      l.append(i);
+      return l;
+    };
+    form.append(input('Duo name', 'name', d.name, 32));
+    const streams = el('label', 'vm-field', "Who's streaming");
+    const sel = el('select', 'vm-select');
+    sel.name = 'streams';
+    [['p1', 'Player 1'], ['p2', 'Player 2'], ['both', 'Both']].forEach(([v, t]) => {
+      const o = el('option', '', t);
+      o.value = v;
+      sel.append(o);
+    });
+    sel.value = d.streams;
+    streams.append(sel);
+    form.append(streams);
+    [1, 2].forEach((n) => {
+      const fs = el('fieldset', 'vm-fieldset');
+      fs.append(el('legend', '', `Player ${n}`));
+      const p = d[`p${n}`];
+      fs.append(input('Epic name', `p${n}-epic`, p.epic, 16), input('Twitch name', `p${n}-twitch`, p.twitch, 25), input('Discord name', `p${n}-discord`, p.discord, 32));
+      form.append(fs);
+    });
+    const err = el('p', 'vm-flash vm-flash--warn');
+    err.hidden = true;
+    const row = el('div', 'vm-row');
+    const save = el('button', 'vm-btn vm-btn--small', 'Save changes');
+    save.type = 'submit';
+    const cancel = el('button', 'vm-linkbtn', 'Cancel');
+    cancel.type = 'button';
+    cancel.addEventListener('click', () => card.replaceWith(duoCard(d)));
+    row.append(save, cancel);
+    form.append(err, row);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v = (n) => form.elements[n].value.trim();
+      const duo = {
+        name: v('name'),
+        streams: v('streams'),
+        p1: { epic: v('p1-epic'), twitch: v('p1-twitch'), discord: v('p1-discord') },
+        p2: { epic: v('p2-epic'), twitch: v('p2-twitch'), discord: v('p2-discord') },
+      };
+      try {
+        await api('duo', { id: d.id, action: 'edit', duo });
+        flash(`${duo.name} saved.`);
+        await load();
+      } catch (e2) {
+        err.textContent = e2.message;
+        err.hidden = false;
+      }
+    });
+    card.append(form);
     return card;
   }
 

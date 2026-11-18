@@ -47,6 +47,9 @@ Fortnite Zero Build duos tournament on Saturday, December 12, 2026.
   `?rows=5` sets how many duos show (3–10), `&side=left` moves the panel.
 - `/vibesmas/admin`: approve / decline (with a note the duo sees),
   mark or undo check-ins (and filter "Not checked in"),
+  edit a team (name, players, who streams), remove one player before the
+  tournament starts (the team is split and the other player goes back to
+  Free agents, keeping the team's status link) or delete a whole team,
   enter each game's placements and kills, publish games, set the status
   (before / live / 24-hour review / final), the game in progress and the
   ugly Christmas sweater contest winner. Activity log on the side.
