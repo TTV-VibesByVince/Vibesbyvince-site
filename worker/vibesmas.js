@@ -16,6 +16,10 @@
 // key is stored, so the key in the duo's status link can't be recovered
 // from the database. New sign-ups are announced in a private Discord
 // channel through the VIBESMAS_DISCORD_WEBHOOK secret (optional).
+//
+// Players without a partner can sign up alone ("free agents"). Vince pairs
+// two of them in the admin, which creates an approved duo; both players'
+// status links then show that duo.
 
 import { db, requireAdmin, getSetting, setSetting, json } from './calendar.js';
 import { appConfigured, appHelix } from './twitch-app.js';
@@ -67,6 +71,20 @@ async function vdb(env) {
       d.prepare(`CREATE TABLE IF NOT EXISTS vibesmas_games (
         game INTEGER PRIMARY KEY,
         published INTEGER NOT NULL DEFAULT 0,
+        updated_at TEXT NOT NULL
+      )`),
+      d.prepare(`CREATE TABLE IF NOT EXISTS vibesmas_solo (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        status TEXT NOT NULL DEFAULT 'looking',
+        epic TEXT NOT NULL,
+        twitch TEXT,
+        discord TEXT NOT NULL,
+        streams INTEGER NOT NULL DEFAULT 0,
+        note TEXT,
+        duo_id INTEGER,
+        token_hash TEXT NOT NULL UNIQUE,
+        ip_hash TEXT,
+        created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )`),
       d.prepare(`CREATE TABLE IF NOT EXISTS vibesmas_log (
@@ -227,7 +245,7 @@ function validateDuo(b) {
 }
 
 // Duo name and players must not already be on another active sign-up.
-async function checkConflicts(d, duo, exceptId = 0) {
+async function checkConflicts(d, duo, exceptId = 0, exceptSolo = []) {
   const { results } = await d
     .prepare("SELECT id, name, p1_epic, p2_epic, p1_twitch, p2_twitch FROM vibesmas_duos WHERE status != 'declined' AND id != ?")
     .bind(exceptId)
@@ -245,7 +263,53 @@ async function checkConflicts(d, duo, exceptId = 0) {
       return { error: 'player_taken', player: lower(duo.p1_twitch) && twitch.includes(lower(duo.p1_twitch)) ? 1 : 2 };
     }
   }
+  const { results: solos } = await d
+    .prepare("SELECT id, epic, twitch FROM vibesmas_solo WHERE status = 'looking' AND id NOT IN (?, ?)")
+    .bind(exceptSolo[0] || 0, exceptSolo[1] || 0)
+    .all();
+  for (const r of solos || []) {
+    for (let i = 0; i < 2; i++) {
+      if (lower(r.epic) === myEpics[i] || (r.twitch && lower(r.twitch) === lower(duo[`p${i + 1}_twitch`]))) {
+        return { error: 'player_looking', player: i + 1 };
+      }
+    }
+  }
   return null;
+}
+
+// A free agent must not already be in a duo or looking twice.
+async function checkSoloConflicts(d, solo, exceptId = 0) {
+  const { results: duos } = await d
+    .prepare("SELECT p1_epic, p2_epic, p1_twitch, p2_twitch FROM vibesmas_duos WHERE status != 'declined'")
+    .all();
+  for (const r of duos || []) {
+    if ([lower(r.p1_epic), lower(r.p2_epic)].includes(lower(solo.epic))) return { error: 'player_taken', player: 1 };
+    if (solo.twitch && [lower(r.p1_twitch), lower(r.p2_twitch)].includes(lower(solo.twitch))) return { error: 'player_taken', player: 1 };
+  }
+  const { results: solos } = await d.prepare("SELECT epic, twitch FROM vibesmas_solo WHERE status = 'looking' AND id != ?").bind(exceptId).all();
+  for (const r of solos || []) {
+    if (lower(r.epic) === lower(solo.epic) || (solo.twitch && r.twitch && lower(r.twitch) === lower(solo.twitch))) {
+      return { error: 'already_looking' };
+    }
+  }
+  return null;
+}
+
+function validateSolo(b) {
+  if (!b || typeof b !== 'object') return { error: 'bad_request' };
+  if (b.website) return { error: 'bad_request' };
+  const p = b.player || {};
+  const epic = clean(p.epic, 16);
+  const twitch = clean(p.twitch, 25).replace(/^@/, '').replace(/^https?:\/\/(www\.)?twitch\.tv\//i, '');
+  const discord = clean(p.discord, 32).replace(/^@/, '');
+  const streams = b.streams === true;
+  if (epic.length < 3 || epic.length > 16) return { error: 'epic_required', player: 1 };
+  if (twitch && !TWITCH_RE.test(twitch)) return { error: 'twitch_invalid', player: 1 };
+  if (streams && !twitch) return { error: 'twitch_required', player: 1 };
+  if (!discord) return { error: 'solo_discord_required' };
+  if (!DISCORD_RE.test(discord)) return { error: 'discord_invalid', player: 1 };
+  if (!b.age21 || !b.streamVod || !b.rules) return { error: 'confirm_required' };
+  return { solo: { epic, twitch: twitch || null, discord, streams: streams ? 1 : 0, note: clean(b.note, 140) || null } };
 }
 
 // Both Twitch names (when given) must be real channels. Skipped if the
@@ -288,6 +352,23 @@ function notify(env, ctx, origin, title, duo) {
     `Player 2: ${playerLine(duo.p2_epic, duo.p2_twitch, duo.p2_discord)}`,
     `Review it: ${origin}/vibesmas/admin`,
   ].join('\n');
+  const send = fetch(hook, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+  }).catch(() => {});
+  if (ctx && ctx.waitUntil) ctx.waitUntil(send);
+}
+
+function notifySolo(env, ctx, origin, title, x) {
+  const hook = env.VIBESMAS_DISCORD_WEBHOOK;
+  if (!hook || !/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\//.test(hook)) return;
+  const content = [
+    `🎄 **${title}**`,
+    `${playerLine(x.epic, x.twitch, x.discord)}${x.streams ? ' · will stream' : ''}`,
+    x.note ? `Note: ${discordSafe(x.note)}` : '',
+    `Pair them up: ${origin}/vibesmas/admin`,
+  ].filter(Boolean).join('\n');
   const send = fetch(hook, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -379,11 +460,12 @@ async function publicState(env, d, ctx) {
   const hit = await cache.match(cacheKey);
   if (hit) return hit;
 
-  const [{ results: duos }, { results: scores }, { results: games }, settings] = await Promise.all([
+  const [{ results: duos }, { results: scores }, { results: games }, settings, lookingRow] = await Promise.all([
     d.prepare("SELECT * FROM vibesmas_duos WHERE status = 'approved' ORDER BY created_at").all(),
     d.prepare('SELECT * FROM vibesmas_scores').all(),
     d.prepare('SELECT game FROM vibesmas_games WHERE published = 1').all(),
     readSettings(d),
+    d.prepare("SELECT COUNT(*) AS n FROM vibesmas_solo WHERE status = 'looking'").first(),
   ]);
   const published = (games || []).map((g) => g.game).sort((a, b) => a - b);
 
@@ -409,6 +491,7 @@ async function publicState(env, d, ctx) {
     maxDuos: TOURNAMENT.maxDuos,
     games: TOURNAMENT.games,
     approved: roster.length,
+    lookingForPartner: lookingRow ? lookingRow.n : 0,
     regOpen: regOpen(now) && roster.length < TOURNAMENT.maxDuos,
     ...settings,
     published,
@@ -432,21 +515,28 @@ async function signup(request, env, d, ctx) {
   if (!regOpen()) return json({ error: 'registration_closed' }, 409);
   if ((await approvedCount(d)) >= TOURNAMENT.maxDuos) return json({ error: 'full' }, 409);
 
-  const v = validateDuo(await readJson(request));
-  if (v.error) return json(v, 400);
-  const conflict = await checkConflicts(d, v.duo);
-  if (conflict) return json(conflict, 409);
-  const tw = await checkTwitch(env, v.duo);
-  if (tw) return json(tw, 400);
+  const body = await readJson(request);
 
   // A few sign-ups a day per network, to stop spam filling the queue.
   const ip = request.headers.get('cf-connecting-ip') || '';
   const ipHash = ip ? (await sha256Hex(`vibesmas:${ip}:${env.TWITCH_CLIENT_SECRET || ''}`)).slice(0, 32) : null;
   if (ipHash) {
     const since = new Date(Date.now() - 86400000).toISOString();
-    const r = await d.prepare('SELECT COUNT(*) AS n FROM vibesmas_duos WHERE ip_hash = ? AND created_at > ?').bind(ipHash, since).first();
+    const r = await d
+      .prepare('SELECT (SELECT COUNT(*) FROM vibesmas_duos WHERE ip_hash = ?1 AND created_at > ?2) + (SELECT COUNT(*) FROM vibesmas_solo WHERE ip_hash = ?1 AND created_at > ?2) AS n')
+      .bind(ipHash, since)
+      .first();
     if (r && r.n >= SIGNUPS_PER_DAY_PER_IP) return json({ error: 'too_many' }, 429);
   }
+
+  if (body && body.solo === true) return await signupSolo(env, d, ctx, request, body, ipHash);
+
+  const v = validateDuo(body);
+  if (v.error) return json(v, 400);
+  const conflict = await checkConflicts(d, v.duo);
+  if (conflict) return json(conflict, 409);
+  const tw = await checkTwitch(env, v.duo);
+  if (tw) return json(tw, 400);
 
   const token = newToken();
   const t = nowIso();
@@ -459,6 +549,40 @@ async function signup(request, env, d, ctx) {
   await log(d, 'sign-up', `${x.name} signed up`);
   notify(env, ctx, new URL(request.url).origin, 'New Vibesmas sign-up', x);
   return json({ ok: true, token }, 201);
+}
+
+async function signupSolo(env, d, ctx, request, body, ipHash) {
+  const v = validateSolo(body);
+  if (v.error) return json(v, 400);
+  const x = v.solo;
+  const conflict = await checkSoloConflicts(d, x);
+  if (conflict) return json(conflict, 409);
+  const tw = await checkTwitch(env, { p1_twitch: x.twitch });
+  if (tw) return json(tw, 400);
+  const token = newToken();
+  const t = nowIso();
+  await d
+    .prepare(`INSERT INTO vibesmas_solo (status, epic, twitch, discord, streams, note, token_hash, ip_hash, created_at, updated_at)
+      VALUES ('looking', ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    .bind(x.epic, x.twitch, x.discord, x.streams, x.note, await sha256Hex(token), ipHash, t, t)
+    .run();
+  await log(d, 'sign-up', `${x.epic} is looking for a partner`);
+  notifySolo(env, ctx, new URL(request.url).origin, 'New free agent looking for a Vibesmas partner', x);
+  await purgePublic();
+  return json({ ok: true, token, solo: true }, 201);
+}
+
+function soloView(r) {
+  return {
+    status: r.status,
+    epic: r.epic,
+    twitch: r.twitch || '',
+    discord: r.discord,
+    streams: !!r.streams,
+    note: r.note || '',
+    createdAt: r.created_at,
+    canEdit: r.status === 'looking' && regOpen(),
+  };
 }
 
 // ---------- a duo's own status page ----------
@@ -484,10 +608,21 @@ function ownView(r) {
 async function statusRoute(request, env, url, d, ctx) {
   const token = url.searchParams.get('t') || '';
   if (!/^[A-Za-z0-9_-]{20,40}$/.test(token)) return json({ error: 'not_found' }, 404);
-  const row = await d.prepare('SELECT * FROM vibesmas_duos WHERE token_hash = ?').bind(await sha256Hex(token)).first();
-  if (!row) return json({ error: 'not_found' }, 404);
+  const hash = await sha256Hex(token);
+  let row = await d.prepare('SELECT * FROM vibesmas_duos WHERE token_hash = ?').bind(hash).first();
+  let pairedFrom = false;
+  if (!row) {
+    const solo = await d.prepare('SELECT * FROM vibesmas_solo WHERE token_hash = ?').bind(hash).first();
+    if (!solo) return json({ error: 'not_found' }, 404);
+    const duo = solo.status === 'paired' && solo.duo_id ? await d.prepare('SELECT * FROM vibesmas_duos WHERE id = ?').bind(solo.duo_id).first() : null;
+    if (!duo) return await soloStatus(request, env, url, d, ctx, solo);
+    row = duo;
+    pairedFrom = true;
+  }
 
-  if (request.method === 'GET') return json({ duo: ownView(row) });
+  if (request.method === 'GET') return json({ duo: { ...ownView(row), ...(pairedFrom ? { canEdit: false, paired: true } : {}) } });
+
+  if (pairedFrom && (request.method === 'PUT' || request.method === 'DELETE')) return json({ error: 'paired_locked' }, 409);
 
   if (request.method === 'PUT') {
     if (row.status === 'approved') return json({ error: 'locked' }, 409);
@@ -535,6 +670,39 @@ async function statusRoute(request, env, url, d, ctx) {
   return json({ error: 'not_found' }, 404);
 }
 
+async function soloStatus(request, env, url, d, ctx, solo) {
+  if (request.method === 'GET') return json({ solo: soloView(solo) });
+
+  if (request.method === 'PUT') {
+    if (solo.status !== 'looking') return json({ error: 'locked' }, 409);
+    if (!regOpen()) return json({ error: 'registration_closed' }, 409);
+    const v = validateSolo(await readJson(request));
+    if (v.error) return json(v, 400);
+    const x = v.solo;
+    const conflict = await checkSoloConflicts(d, x, solo.id);
+    if (conflict) return json(conflict, 409);
+    const tw = await checkTwitch(env, { p1_twitch: x.twitch });
+    if (tw) return json(tw, 400);
+    await d
+      .prepare('UPDATE vibesmas_solo SET epic = ?, twitch = ?, discord = ?, streams = ?, note = ?, updated_at = ? WHERE id = ?')
+      .bind(x.epic, x.twitch, x.discord, x.streams, x.note, nowIso(), solo.id)
+      .run();
+    await log(d, 'sign-up', `${x.epic} edited their free-agent sign-up`);
+    const updated = await d.prepare('SELECT * FROM vibesmas_solo WHERE id = ?').bind(solo.id).first();
+    return json({ solo: soloView(updated) });
+  }
+
+  if (request.method === 'DELETE') {
+    await d.prepare('DELETE FROM vibesmas_solo WHERE id = ?').bind(solo.id).run();
+    await log(d, 'sign-up', `${solo.epic} stopped looking for a partner`);
+    await purgePublic();
+    return json({ ok: true });
+  }
+
+  if (request.method === 'POST') return json({ error: 'not_approved' }, 409);
+  return json({ error: 'not_found' }, 404);
+}
+
 // ---------- admin ----------
 
 function adminDuo(r) {
@@ -564,12 +732,14 @@ async function adminRoute(request, env, url, d, admin) {
       d.prepare('SELECT * FROM vibesmas_log ORDER BY id DESC LIMIT 40').all(),
       readSettings(d),
     ]);
+    const { results: solos } = await d.prepare("SELECT * FROM vibesmas_solo WHERE status = 'looking' ORDER BY created_at").all();
     return json({
       ...TOURNAMENT,
       ...settings,
       regOpen: regOpen(),
       signedIn: admin.email,
       duos: (duos || []).map(adminDuo),
+      freeAgents: (solos || []).map((r) => ({ id: r.id, ...soloView(r) })),
       scores: scores || [],
       gameCount: TOURNAMENT.games,
       games: games || [],
@@ -602,11 +772,60 @@ async function adminRoute(request, env, url, d, admin) {
       await d.batch([
         d.prepare('DELETE FROM vibesmas_scores WHERE duo_id = ?').bind(id),
         d.prepare('DELETE FROM vibesmas_duos WHERE id = ?').bind(id),
+        d.prepare("UPDATE vibesmas_solo SET status = 'looking', duo_id = NULL, updated_at = ? WHERE duo_id = ?").bind(nowIso(), id),
       ]);
       await log(d, actor, `deleted ${row.name}`);
     } else {
       return json({ error: 'bad_request' }, 400);
     }
+    await purgePublic();
+    return json({ ok: true });
+  }
+
+  if (sub === 'pair' && request.method === 'POST') {
+    const b = (await readJson(request)) || {};
+    const ids = Array.isArray(b.ids) ? b.ids.map(Number) : [];
+    if (ids.length !== 2 || ids[0] === ids[1]) return json({ error: 'pick_two' }, 400);
+    const name = clean(b.name, 32);
+    if (name.length < 2) return json({ error: 'name_required' }, 400);
+    if (name.length > 32) return json({ error: 'name_too_long' }, 400);
+    const a = await d.prepare("SELECT * FROM vibesmas_solo WHERE id = ? AND status = 'looking'").bind(ids[0]).first();
+    const c = await d.prepare("SELECT * FROM vibesmas_solo WHERE id = ? AND status = 'looking'").bind(ids[1]).first();
+    if (!a || !c) return json({ error: 'not_found' }, 404);
+    if (!(a.streams && a.twitch) && !(c.streams && c.twitch)) return json({ error: 'no_streamer' }, 400);
+    if ((await approvedCount(d)) >= TOURNAMENT.maxDuos) return json({ error: 'full' }, 409);
+    const duo = {
+      name,
+      streams: a.streams && c.streams ? 'both' : a.streams ? 'p1' : 'p2',
+      p1_epic: a.epic, p1_twitch: a.twitch, p1_discord: a.discord,
+      p2_epic: c.epic, p2_twitch: c.twitch, p2_discord: c.discord,
+    };
+    const conflict = await checkConflicts(d, duo, 0, [a.id, c.id]);
+    if (conflict) return json(conflict, 409);
+    const t = nowIso();
+    // the duo's own key is never handed out; each player keeps their own link
+    const res = await d
+      .prepare(`INSERT INTO vibesmas_duos (name, status, streams, p1_epic, p1_twitch, p1_discord, p2_epic, p2_twitch, p2_discord, token_hash, created_at, updated_at)
+        VALUES (?, 'approved', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(name, duo.streams, a.epic, a.twitch, a.discord, c.epic, c.twitch, c.discord, await sha256Hex(newToken()), t, t)
+      .run();
+    const duoId = res.meta && res.meta.last_row_id;
+    await d
+      .prepare("UPDATE vibesmas_solo SET status = 'paired', duo_id = ?, updated_at = ? WHERE id IN (?, ?)")
+      .bind(duoId, t, a.id, c.id)
+      .run();
+    await log(d, actor, `paired ${a.epic} and ${c.epic} as ${name}`);
+    await purgePublic();
+    return json({ ok: true, id: duoId });
+  }
+
+  if (sub === 'solo' && request.method === 'POST') {
+    const b = (await readJson(request)) || {};
+    const row = await d.prepare('SELECT * FROM vibesmas_solo WHERE id = ?').bind(Number(b.id)).first();
+    if (!row) return json({ error: 'not_found' }, 404);
+    if (b.action !== 'delete') return json({ error: 'bad_request' }, 400);
+    await d.prepare('DELETE FROM vibesmas_solo WHERE id = ?').bind(row.id).run();
+    await log(d, actor, `removed free agent ${row.epic}`);
     await purgePublic();
     return json({ ok: true });
   }

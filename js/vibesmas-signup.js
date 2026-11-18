@@ -10,6 +10,7 @@
   const KEY_STORE = 'vbv-vibesmas-key';
   let key = null;
   let current = null; // the duo as last loaded
+  let solo = null; // or the free-agent sign-up, when someone signed up alone
 
   $('year').textContent = new Date().getFullYear();
 
@@ -34,6 +35,10 @@
     bad_origin: 'That request was blocked. Reload the page and try again.',
     not_found: "That status link doesn't match a sign-up. It may have been withdrawn.",
     not_approved: 'Only approved duos can check in.',
+    solo_discord_required: 'Add your Discord name so Vince can introduce you to your partner.',
+    already_looking: "You're already signed up as looking for a partner. Open your status link to change it.",
+    player_looking: (p) => `Player ${p} is signed up as looking for a partner. They need to stop looking from their status link first.`,
+    paired_locked: "You've been paired up, so your duo is locked. Ask Vince in Discord if something needs to change.",
     checkin_closed: 'Check-in is closed right now.',
   };
   const FIELD_FOR = {
@@ -76,6 +81,27 @@
   }
   form.querySelectorAll('input[name="streams"]').forEach((r) => r.addEventListener('change', syncRequired));
 
+  const mode = () => form.elements.mode.value;
+
+  function setMode(m) {
+    form.querySelector(`input[name="mode"][value="${m}"]`).checked = true;
+    form.querySelectorAll('[data-mode]').forEach((n) => (n.hidden = n.dataset.mode !== m));
+    $('mode-help').textContent =
+      m === 'solo'
+        ? "Sign up on your own and Vince will pair you with another player who's looking."
+        : 'Sign up together with your teammate.';
+    if (!key) {
+      $('submit').textContent = m === 'solo' ? 'Find me a partner' : 'Send for approval';
+      $('page-title').textContent = m === 'solo' ? 'Find a partner' : 'Sign up your duo';
+    }
+  }
+  form.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener('change', () => setMode(r.value)));
+
+  function syncSolo() {
+    $('s-twitch-req').textContent = field('s-streams').checked ? 'required' : 'optional';
+  }
+  field('s-streams').addEventListener('change', syncSolo);
+
   function clearErrors() {
     $('form-error').hidden = true;
     form.querySelectorAll('[aria-invalid]').forEach((i) => i.removeAttribute('aria-invalid'));
@@ -87,7 +113,10 @@
     const d = err.data || {};
     const kind = FIELD_FOR[d.error];
     let input = null;
-    if (kind === 'name') input = field('name');
+    if (mode() === 'solo') {
+      if (d.error === 'solo_discord_required') input = field('s-discord');
+      else if (kind && kind !== 'name') input = field(`s-${kind}`);
+    } else if (kind === 'name') input = field('name');
     else if (kind && d.player) input = field(`p${d.player}-${kind}`);
     if (input) {
       input.setAttribute('aria-invalid', 'true');
@@ -99,6 +128,18 @@
 
   function readForm() {
     const v = (n) => field(n).value.trim();
+    if (mode() === 'solo') {
+      return {
+        solo: true,
+        player: { epic: v('s-epic'), twitch: v('s-twitch'), discord: v('s-discord') },
+        streams: field('s-streams').checked,
+        note: v('s-note'),
+        age21: field('age21').checked,
+        streamVod: field('streamVod').checked,
+        rules: field('rules').checked,
+        website: field('website').value,
+      };
+    }
     return {
       name: v('name'),
       streams: form.elements.streams.value,
@@ -123,6 +164,29 @@
     syncRequired();
   }
 
+  function fillSolo(x) {
+    setMode('solo');
+    field('s-epic').value = x.epic || '';
+    field('s-twitch').value = x.twitch || '';
+    field('s-discord').value = x.discord || '';
+    field('s-note').value = x.note || '';
+    field('s-streams').checked = !!x.streams;
+    ['age21', 'streamVod', 'rules'].forEach((n) => (field(n).checked = true));
+    syncSolo();
+  }
+
+  // Loads whatever the private key points at: a duo, or a free agent.
+  async function loadStatus() {
+    const r = await api(`/api/vibesmas/status?t=${encodeURIComponent(key)}`);
+    current = r.duo || null;
+    solo = r.solo || null;
+  }
+
+  function show(justSaved) {
+    if (solo) showSolo(justSaved);
+    else showStatus(justSaved);
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     clearErrors();
@@ -133,7 +197,8 @@
     try {
       if (key) {
         const r = await api(`/api/vibesmas/status?t=${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify(readForm()) });
-        current = r.duo;
+        current = r.duo || null;
+        solo = r.solo || null;
       } else {
         const r = await api('/api/vibesmas/signup', { method: 'POST', body: JSON.stringify(readForm()) });
         key = r.token;
@@ -141,9 +206,9 @@
           localStorage.setItem(KEY_STORE, key);
         } catch {}
         history.replaceState(null, '', `#k=${key}`);
-        current = (await api(`/api/vibesmas/status?t=${encodeURIComponent(key)}`)).duo;
+        await loadStatus();
       }
-      showStatus(true);
+      show(true);
     } catch (err) {
       showError(err);
     } finally {
@@ -152,7 +217,7 @@
     }
   });
 
-  $('cancel-edit').addEventListener('click', () => showStatus());
+  $('cancel-edit').addEventListener('click', () => show());
 
   // ---------- status ----------
 
@@ -182,7 +247,7 @@
     $('st-badge').textContent = label;
     $('st-badge').className = `vm-badge ${cls}`;
     $('st-title').textContent =
-      d.status === 'approved' ? "You're on the roster" : d.status === 'declined' ? 'This sign-up was not approved' : justSaved ? "You're in the queue" : 'Waiting for Vince to review it';
+      d.paired ? "You've been paired up" : d.status === 'approved' ? "You're on the roster" : d.status === 'declined' ? 'This sign-up was not approved' : justSaved ? "You're in the queue" : 'Waiting for Vince to review it';
     $('st-text').textContent =
       d.status === 'approved'
         ? 'See you on Saturday, December 12. Check in on Discord by 9:45 AM MST.'
@@ -206,13 +271,56 @@
 
     $('st-link').textContent = `${location.origin}/vibesmas/signup#k=${key}`;
     $('st-edit').hidden = !d.canEdit;
-    $('st-withdraw').hidden = false;
+    $('st-edit').textContent = 'Edit duo';
+    $('st-withdraw').textContent = 'Withdraw';
+    $('st-withdraw').hidden = !!d.paired;
     $('st-confirm').hidden = true;
     renderCheckin();
     const approved = d.status === 'approved';
     $('st-share').hidden = !approved;
     $('st-cal').hidden = !approved;
     if (approved) drawShare('square', true);
+    if (justSaved) $('status').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
+  // ---------- free agent status ----------
+
+  function showSolo(justSaved = false) {
+    const x = solo;
+    form.hidden = true;
+    $('loading').hidden = true;
+    $('status').hidden = false;
+    $('page-title').textContent = x.epic;
+    $('page-intro').textContent = 'Your Vibesmas sign-up.';
+    $('st-badge').textContent = 'Looking for a partner';
+    $('st-badge').className = 'vm-badge vm-badge--pending';
+    $('st-title').textContent = justSaved ? "You're in the partner pool" : 'Waiting to be paired';
+    $('st-text').textContent =
+      "Vince will pair you with another player who's looking and let you know on Discord. Once you're paired, this page shows your duo.";
+    $('st-note').hidden = true;
+    const dl = $('st-details');
+    dl.textContent = '';
+    const rows = [
+      ['You', [`Epic: ${x.epic}`, x.twitch ? `Twitch: ${x.twitch}` : '', `Discord: ${x.discord}`].filter(Boolean).join(' · ')],
+      ['Streaming', x.streams ? "Yes, I'll stream" : 'No, pair me with a streamer'],
+    ];
+    if (x.note) rows.push(['Your note', x.note]);
+    rows.forEach(([t, v]) => {
+      const div = document.createElement('div');
+      const dt = document.createElement('dt');
+      dt.textContent = t;
+      const dd = document.createElement('dd');
+      dd.textContent = v;
+      div.append(dt, dd);
+      dl.append(div);
+    });
+    $('st-link').textContent = `${location.origin}/vibesmas/signup#k=${key}`;
+    $('st-edit').hidden = !x.canEdit;
+    $('st-edit').textContent = 'Edit';
+    $('st-withdraw').hidden = false;
+    $('st-withdraw').textContent = 'Stop looking';
+    $('st-confirm').hidden = true;
+    ['st-checkin', 'st-share', 'st-cal'].forEach((id) => ($(id).hidden = true));
     if (justSaved) $('status').scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
@@ -409,14 +517,20 @@
   });
 
   $('st-edit').addEventListener('click', () => {
-    fillForm(current);
+    if (solo) {
+      fillSolo(solo);
+    } else {
+      setMode('duo');
+      fillForm(current);
+    }
     clearErrors();
+    $('mode-box').hidden = true;
     $('status').hidden = true;
     form.hidden = false;
-    $('submit').textContent = current.status === 'declined' ? 'Send again' : 'Save changes';
+    $('submit').textContent = !solo && current.status === 'declined' ? 'Send again' : 'Save changes';
     $('cancel-edit').hidden = false;
     $('submit-note').hidden = true;
-    field('name').focus();
+    field(solo ? 's-epic' : 'name').focus();
   });
 
   $('st-withdraw').addEventListener('click', () => {
@@ -433,12 +547,16 @@
       try {
         localStorage.removeItem(KEY_STORE);
       } catch {}
+      const wasSolo = !!solo;
       key = null;
       current = null;
+      solo = null;
       history.replaceState(null, '', location.pathname);
       $('status').hidden = true;
       $('page-title').textContent = 'Sign up your duo';
-      $('page-intro').textContent = 'Your duo was withdrawn. You can sign up again any time before registration closes.';
+      $('page-intro').textContent = wasSolo
+        ? "You're no longer looking for a partner. You can sign up again any time before registration closes."
+        : 'Your duo was withdrawn. You can sign up again any time before registration closes.';
       startForm();
     } catch (err) {
       $('st-text').textContent = err.message;
@@ -450,7 +568,9 @@
   function startForm() {
     form.reset();
     syncRequired();
-    $('submit').textContent = 'Send for approval';
+    syncSolo();
+    $('mode-box').hidden = false;
+    setMode('duo');
     $('cancel-edit').hidden = true;
     $('submit-note').hidden = false;
     $('loading').hidden = true;
@@ -461,6 +581,10 @@
     try {
       const s = await api('/api/vibesmas');
       $('spots').textContent = `${s.approved} of ${s.maxDuos} duos approved · closes Dec 5, 11:59 PM MST`;
+      if (s.lookingForPartner > 0) {
+        $('looking').textContent = `${s.lookingForPartner} ${s.lookingForPartner === 1 ? 'player is' : 'players are'} looking for a partner right now.`;
+        $('looking').hidden = false;
+      }
       if (!s.regOpen) {
         $('closed').textContent =
           s.approved >= s.maxDuos ? 'All 40 spots are filled. Thanks for the love!' : 'Registration is closed. See you at the tournament on December 12!';
@@ -481,12 +605,12 @@
 
     if (key) {
       try {
-        current = (await api(`/api/vibesmas/status?t=${encodeURIComponent(key)}`)).duo;
+        await loadStatus();
         if (!m) history.replaceState(null, '', `#k=${key}`);
         try {
           localStorage.setItem(KEY_STORE, key);
         } catch {}
-        showStatus();
+        show();
         return;
       } catch (err) {
         if (m) {
