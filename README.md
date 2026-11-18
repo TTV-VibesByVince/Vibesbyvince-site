@@ -22,6 +22,12 @@ Fortnite Zero Build duos tournament on Saturday, December 12, 2026.
 - `/vibesmas/leaderboard`: live standings (refreshes every 30 s). Only
   games published in the admin count. Points: 1st 10, 2nd 8, 3rd 6, 4th 4,
   5th 2, +1 per duo kill; ties go to total kills.
+- **Free agents:** on `/vibesmas/signup`, "I need a partner" signs up one
+  player (Epic and Discord required, Twitch if they'll stream, optional
+  note). Vince pairs two of them in the admin's **Free agents** tab, which
+  creates an approved duo (at least one must stream); both players' status
+  links then show the duo. Removing that duo puts them back in the pool.
+  Table `vibesmas_solo`.
 - `/vibesmas/watch`: every streamer from the approved duos, live ones
   first (`/api/vibesmas/live`, cached 60 s). "Watch here" loads up to 4
   Twitch players side by side; nothing from Twitch loads until then.

@@ -34,6 +34,7 @@
 
   <div class="vm-tabs" role="tablist" aria-label="Admin sections">
     <button class="vm-tab" type="button" role="tab" data-tab="approvals" aria-selected="true" id="tab-approvals">Approvals</button>
+    <button class="vm-tab" type="button" role="tab" data-tab="agents" aria-selected="false" id="tab-agents">Free agents</button>
     <button class="vm-tab" type="button" role="tab" data-tab="scores" aria-selected="false">Enter scores</button>
     <button class="vm-tab" type="button" role="tab" data-tab="results" aria-selected="false">Results</button>
   </div>
@@ -55,6 +56,21 @@
         </div>
         <div id="duo-list" style="display:flex;flex-direction:column;gap:14px"></div>
         <p class="vm-empty" id="duo-empty" hidden></p>
+      </section>
+
+      <!-- free agents -->
+      <section id="pane-agents" aria-label="Free agents" hidden style="display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0">Players who signed up without a partner. Tick two, give the duo a name and pair them. The new duo is approved straight away, and both players' status links show it.</p>
+        <div class="vm-card" id="pair-bar" style="position:sticky;top:12px;z-index:2">
+          <p style="margin:0" id="pair-picked">Tick two players to pair them.</p>
+          <div class="vm-row">
+            <input class="vm-input" id="pair-name" maxlength="32" placeholder="Duo name" aria-label="Name for the new duo">
+            <button class="vm-btn vm-btn--small" type="button" id="pair-btn" disabled>Pair them</button>
+          </div>
+          <p class="vm-small" id="pair-warn" style="color:#f7dc9a !important" hidden></p>
+        </div>
+        <div id="agent-list" style="display:flex;flex-direction:column;gap:12px"></div>
+        <p class="vm-empty" id="agent-empty" hidden>Nobody is looking for a partner right now.</p>
       </section>
 
       <!-- scores -->

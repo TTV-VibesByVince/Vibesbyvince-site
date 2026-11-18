@@ -11,6 +11,11 @@
   let game = null;
 
   const ERRORS = {
+    pick_two: 'Tick exactly two players to pair.',
+    name_required: 'Give the new duo a name.',
+    no_streamer: "Neither player will stream. Every duo needs at least one streamer, so pair one of them with someone who'll stream.",
+    player_taken: 'One of these players is already in another duo.',
+    name_taken: 'Another duo already has that name.',
     not_signed_in: 'Your login expired. Reload the page to sign in again.',
     not_allowed: "This account isn't allowed to use the Vibesmas admin.",
     admin_not_configured: "The admin login isn't set up yet (ACCESS_TEAM_DOMAIN, ACCESS_AUD and ADMIN_EMAIL secrets).",
@@ -71,7 +76,7 @@
   document.querySelectorAll('[data-tab]').forEach((b) =>
     b.addEventListener('click', () => {
       document.querySelectorAll('[data-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
-      ['approvals', 'scores', 'results'].forEach((t) => ($(`pane-${t}`).hidden = t !== b.dataset.tab));
+      ['approvals', 'agents', 'scores', 'results'].forEach((t) => ($(`pane-${t}`).hidden = t !== b.dataset.tab));
     }),
   );
   document.querySelectorAll('[data-filter]').forEach((b) =>
@@ -195,6 +200,76 @@
     card.append(row);
     return card;
   }
+
+  // ---------- free agents ----------
+
+  let picked = [];
+
+  function renderAgents() {
+    const agents = S.freeAgents || [];
+    picked = picked.filter((id) => agents.some((a) => a.id === id));
+    const list = $('agent-list');
+    list.textContent = '';
+    agents.forEach((a) => {
+      const card = el('article', 'vm-card');
+      const head = el('div', 'vm-card__head');
+      const pick = el('label', 'vm-check');
+      const box = el('input');
+      box.type = 'checkbox';
+      box.checked = picked.includes(a.id);
+      box.addEventListener('change', () => {
+        if (box.checked) {
+          picked.push(a.id);
+          if (picked.length > 2) picked.shift();
+        } else picked = picked.filter((id) => id !== a.id);
+        renderAgents();
+      });
+      const who = el('span');
+      who.append(el('b', '', a.epic), el('small', '', `Signed up ${when(a.createdAt)}`));
+      pick.append(box, who);
+      head.append(pick, el('span', a.streams ? 'vm-badge vm-badge--approved' : 'vm-badge vm-badge--pending', a.streams ? 'Will stream' : "Won't stream"));
+      card.append(head);
+      const facts = [a.twitch ? `Twitch: ${a.twitch}` : 'No Twitch', `Discord: ${a.discord}`];
+      card.append(el('p', 'vm-small', facts.join(' · ')));
+      if (a.note) card.append(el('p', '', `“${a.note}”`));
+      const row = el('div', 'vm-row');
+      const del = el('button', 'vm-linkbtn', 'Remove');
+      del.type = 'button';
+      del.addEventListener('click', async () => {
+        try {
+          await api('solo', { id: a.id, action: 'delete' });
+          flash(`${a.epic} removed from the free agents.`);
+          await load();
+        } catch (err) {
+          fail(err);
+        }
+      });
+      row.append(del);
+      card.append(row);
+      list.append(card);
+    });
+    $('agent-empty').hidden = agents.length > 0;
+    $('tab-agents').textContent = agents.length ? `Free agents (${agents.length})` : 'Free agents';
+
+    const chosen = picked.map((id) => agents.find((a) => a.id === id));
+    $('pair-picked').textContent = chosen.length ? `Picked: ${chosen.map((a) => a.epic).join(' + ')}` : 'Tick two players to pair them.';
+    const noStreamer = chosen.length === 2 && !chosen.some((a) => a.streams && a.twitch);
+    $('pair-warn').hidden = !noStreamer;
+    $('pair-warn').textContent = noStreamer ? "Neither of these two will stream. Every duo needs a streamer." : '';
+    $('pair-btn').disabled = chosen.length !== 2 || noStreamer;
+  }
+
+  $('pair-btn').addEventListener('click', async () => {
+    try {
+      await api('pair', { ids: picked, name: $('pair-name').value });
+      flash(`Paired as ${$('pair-name').value.trim()}. They're on the roster now.`);
+      picked = [];
+      $('pair-name').value = '';
+      await load();
+    } catch (err) {
+      fail(err);
+    }
+  });
 
   function renderDuos() {
     const list = $('duo-list');
@@ -389,6 +464,7 @@
       S = { ...data, games: Array.isArray(data.games) ? data.games : [], games_total: data.gameCount || 5 };
       $('signed-in').textContent = data.signedIn === 'local-dev' ? 'Local test mode' : `Signed in as ${data.signedIn}`;
       renderDuos();
+      renderAgents();
       renderGameSelect();
       renderScores();
       renderResults();
